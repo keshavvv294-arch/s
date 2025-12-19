@@ -15,7 +15,7 @@ export const AIChat: React.FC<AIChatProps> = ({ initialMessage }) => {
     {
       id: '1',
       role: 'model',
-      text: "Hi! I'm your WealthFlow assistant. I can help you create a budget, explain complex terms, or analyze your spending. How can I help today?",
+      text: "Hi! I'm your WealthFlow AI Assistant. I can help you create a budget, explain complex terms, or analyze your spending. How can I help today?",
       timestamp: new Date()
     }
   ]);
@@ -26,7 +26,6 @@ export const AIChat: React.FC<AIChatProps> = ({ initialMessage }) => {
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    // Initialize chat session
     chatSessionRef.current = createChatSession();
   }, []);
 
@@ -103,13 +102,12 @@ export const AIChat: React.FC<AIChatProps> = ({ initialMessage }) => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] bg-[#0f172a] relative">
-      {/* Header - Transparent/Minimal */}
       <div className="p-4 border-b border-white/5 flex items-center gap-3 backdrop-blur-md sticky top-0 z-10 bg-[#0f172a]/90">
         <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
           <Bot className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="font-bold text-white">AI Assistant</h3>
+          <h3 className="font-bold text-white">WealthFlow AI Assistant</h3>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
             <span className="text-xs text-white/50">Online</span>
@@ -117,7 +115,6 @@ export const AIChat: React.FC<AIChatProps> = ({ initialMessage }) => {
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
         {messages.map((msg) => (
           <div
@@ -157,9 +154,7 @@ export const AIChat: React.FC<AIChatProps> = ({ initialMessage }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="p-4 bg-[#0f172a] border-t border-white/5 space-y-3">
-        {/* Quick Prompts */}
         {messages.length < 3 && !isLoading && (
            <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
               {QUICK_PROMPTS.map(prompt => (
