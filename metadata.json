@@ -1,0 +1,7 @@
+{
+  "name": "Copy of WealthFlow AI",
+  "description": "A smart personal finance manager that helps you track transactions, manage your salary, and gain spending insights using Gemini AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
