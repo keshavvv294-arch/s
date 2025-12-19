@@ -4,13 +4,15 @@ import react from '@vitejs/plugin-react';
 import process from 'node:process';
 
 export default defineConfig(({ mode }) => {
-  // Use process.cwd() from the Node.js process to determine the root path for loading .env files.
-  // Explicitly importing 'process' from 'node:process' resolves TypeScript errors in environments
-  // where the global 'process' might be incorrectly typed as a browser-like object.
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all envs regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '');
+  
   return {
     plugins: [react()],
     define: {
+      // This ensures process.env.API_KEY is available in the browser
+      // It will check the .env file locally and the Netlify Environment Variables in production
       'process.env.API_KEY': JSON.stringify(env.API_KEY || process.env.API_KEY),
     },
     build: {
