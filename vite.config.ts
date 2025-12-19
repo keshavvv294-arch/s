@@ -1,18 +1,21 @@
 
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import process from 'node:process';
 
 export default defineConfig(({ mode }) => {
-  // Fix: Avoid using process.cwd() which might cause type errors in certain environments
-  const env = loadEnv(mode, '.', '');
+  // Use process.cwd() from the Node.js process to determine the root path for loading .env files.
+  // Explicitly importing 'process' from 'node:process' resolves TypeScript errors in environments
+  // where the global 'process' might be incorrectly typed as a browser-like object.
+  const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react()],
     define: {
-      // Safely inject only the necessary environment variables
       'process.env.API_KEY': JSON.stringify(env.API_KEY || process.env.API_KEY),
     },
     build: {
       outDir: 'dist',
+      sourcemap: false,
       rollupOptions: {
         input: {
           main: './index.html',

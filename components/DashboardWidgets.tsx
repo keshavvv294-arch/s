@@ -82,7 +82,7 @@ export const CustomizableDashboard: React.FC<HomeDashboardProps> = (props) => {
     },
     {
       id: 'ai_insight',
-      title: 'Gemini Advisor',
+      title: 'WealthFlow AI Assistant',
       content: <GeminiAdvisor transactions={props.transactions} salary={props.summary.salary} />,
       defaultSize: 'full' as const
     },

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Sparkles, Loader2, Bot, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -42,7 +43,7 @@ export const GeminiAdvisor: React.FC<GeminiAdvisorProps> = ({ transactions, sala
               <Bot className="w-6 h-6" />
             </div>
             <div>
-               <h3 className="text-lg font-bold text-white">Gemini AI</h3>
+               <h3 className="text-lg font-bold text-white">WealthFlow AI Assistant</h3>
                <p className="text-xs text-white/40">Financial Assistant</p>
             </div>
           </div>

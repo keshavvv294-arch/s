@@ -227,7 +227,7 @@ function App() {
 
   const startGlobalVoice = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).Recognition;
       const recognition = new SpeechRecognition();
       recognition.onstart = () => setIsGlobalListening(true);
       recognition.onend = () => setIsGlobalListening(false);
@@ -266,8 +266,7 @@ function App() {
       <main className={activeTab === 'chat' ? "h-full w-full pb-20" : "max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-24 h-full w-full"}>
         {activeTab === 'home' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <SummaryCards summary={summary} privacyMode={settings.privacyMode} onUpdateSalary={handleSalaryUpdate} />
-            {/* Fix: Pass onUpdateSalary to CustomizableDashboard */}
+            {/* DUPLICATE REMOVED: SummaryCards is now handled exclusively by CustomizableDashboard's 'summary' widget to prevent double instances. */}
             <CustomizableDashboard transactions={transactions} assets={assets} summary={summary} budgets={budgets} debts={debts} salary={salary} privacyMode={settings.privacyMode} dailyQuote={dailyQuote} onUpdateSalary={handleSalaryUpdate} actions={{ onOpenForm: () => setIsFormOpen(true), onOpenBudget: () => setIsBudgetModalOpen(true), onOpenInvest: () => setActiveTab('invest'), onOpenChat: () => setActiveTab('chat'), onDeleteTransaction: (id) => setTransactions(t => t.filter(x => x.id !== id)) }} />
           </div>
         )}
