@@ -2,7 +2,13 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, ChatMessage, CATEGORIES, ASSET_TYPES, QuizQuestion, Asset } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = process.env.API_KEY;
+
+if (!apiKey) {
+  console.warn("WealthFlow AI: API_KEY is missing from environment variables. AI features will be disabled.");
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
 
 const SYSTEM_INSTRUCTION = `
 You are WealthFlow AI, a smart, empathetic, and professional financial assistant.
@@ -133,7 +139,6 @@ export const getFinancialAdvice = async (transactions: Transaction[], salary: nu
 };
 
 export const detectSpendingAnomalies = async (transactions: Transaction[]) => {
-  // Placeholder for anomaly detection logic
   return [];
 };
 
@@ -325,7 +330,6 @@ export const optimizeFxTransfer = async (amount: number, from: string, to: strin
   }
 };
 
-// --- REAL-TIME PRICE CHECK (SEARCH GROUNDING) ---
 export const findCheapestPrice = async (productName: string): Promise<{ text: string, sources: any[] }> => {
   try {
     const prompt = `
@@ -341,7 +345,7 @@ export const findCheapestPrice = async (productName: string): Promise<{ text: st
       model: 'gemini-3-pro-preview',
       contents: prompt,
       config: {
-        tools: [{ googleSearch: {} }] // Enable Google Search
+        tools: [{ googleSearch: {} }]
       }
     });
 
@@ -353,7 +357,6 @@ export const findCheapestPrice = async (productName: string): Promise<{ text: st
   }
 };
 
-// --- ROBUST IPO FETCHING WITH FALLBACK ---
 export const getRealIPOData = async (): Promise<any[]> => {
   const MOCK_IPO_DATA = [
     {
@@ -370,36 +373,6 @@ export const getRealIPOData = async (): Promise<any[]> => {
       gmp: 45,
       subscription: 2.5,
       sector: 'Technology'
-    },
-    {
-      id: '2',
-      name: 'GreenEnergy Ltd',
-      symbol: 'BSE:GREEN',
-      status: 'Upcoming',
-      priceRange: '₹120 - ₹130',
-      lotSize: 100,
-      issueSize: '₹1200 Cr',
-      openDate: '2024-04-01',
-      closeDate: '2024-04-04',
-      listingDate: '2024-04-10',
-      gmp: 10,
-      subscription: 0,
-      sector: 'Energy'
-    },
-    {
-      id: '3',
-      name: 'Urban Foods',
-      symbol: 'NSE:UFOOD',
-      status: 'Listed',
-      priceRange: '₹200 - ₹210',
-      lotSize: 60,
-      issueSize: '₹300 Cr',
-      openDate: '2024-02-10',
-      closeDate: '2024-02-13',
-      listingDate: '2024-02-18',
-      gmp: 0,
-      subscription: 15.4,
-      sector: 'FMCG'
     }
   ];
 
@@ -416,19 +389,9 @@ export const getRealIPOData = async (): Promise<any[]> => {
       config: { responseMimeType: 'application/json' }
     });
 
-    if (!response.text) {
-        // Silently fail to mock data
-        return MOCK_IPO_DATA;
-    }
-
-    const data = JSON.parse(response.text);
-    if (!Array.isArray(data) || data.length === 0) {
-        return MOCK_IPO_DATA;
-    }
-    
-    return data;
+    if (!response.text) return MOCK_IPO_DATA;
+    return JSON.parse(response.text);
   } catch (error) {
-    // Return mock data so the UI never crashes or shows an error state to the user
     return MOCK_IPO_DATA;
   }
 };
