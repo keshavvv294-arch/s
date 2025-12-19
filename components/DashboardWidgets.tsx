@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { CustomizableLayout } from './CustomizableLayout';
 import { SummaryCards } from './SummaryCards';
@@ -19,6 +20,8 @@ interface HomeDashboardProps {
   debts: Debt[];
   salary: number;
   privacyMode: boolean;
+  // Fix: Add onUpdateSalary to HomeDashboardProps so it can be passed to SummaryCards
+  onUpdateSalary: (amount: number) => void;
   actions: {
     onOpenForm: () => void;
     onOpenBudget: () => void;
@@ -41,7 +44,8 @@ export const CustomizableDashboard: React.FC<HomeDashboardProps> = (props) => {
     {
       id: 'summary',
       title: 'Balance Summary',
-      content: <SummaryCards summary={props.summary} privacyMode={props.privacyMode} />,
+      // Fix: Pass onUpdateSalary to SummaryCards component
+      content: <SummaryCards summary={props.summary} privacyMode={props.privacyMode} onUpdateSalary={props.onUpdateSalary} />,
       defaultSize: 'full' as const
     },
     {
