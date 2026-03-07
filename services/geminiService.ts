@@ -1,11 +1,19 @@
-
 import { GoogleGenAI } from "@google/genai";
-import { Transaction, ChatMessage, CATEGORIES, ASSET_TYPES, QuizQuestion, Asset } from "../types";
+import { Transaction, CATEGORIES, ASSET_TYPES, QuizQuestion, Asset } from "../types";
 
-const apiKey = process.env.API_KEY;
+// Get API Key from the injected environment variable
+const getApiKey = () => {
+  try {
+    return process.env.API_KEY;
+  } catch (e) {
+    return null;
+  }
+};
+
+const apiKey = getApiKey();
 
 if (!apiKey) {
-  console.warn("WealthFlow AI: API_KEY is missing from environment variables. AI features will be disabled.");
+  console.warn("WealthFlow AI: API_KEY is missing. AI features will be unavailable. Please set API_KEY in your deployment environment variables.");
 }
 
 const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
@@ -78,7 +86,7 @@ export const lookupAssetSymbol = async (query: string): Promise<{ symbol: string
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
-        responseMimeType: 'application/json'
+        responseMimeType: "application/json"
       }
     });
     
@@ -112,7 +120,7 @@ export const batchCategorizeTransactions = async (descriptions: string[]): Promi
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
-      config: { responseMimeType: 'application/json' }
+      config: { responseMimeType: "application/json" }
     });
     return JSON.parse(response.text || '{}');
   } catch {
@@ -138,10 +146,6 @@ export const getFinancialAdvice = async (transactions: Transaction[], salary: nu
   }
 };
 
-export const detectSpendingAnomalies = async (transactions: Transaction[]) => {
-  return [];
-};
-
 export const processNaturalLanguageCommand = async (input: string): Promise<{action: string, data: any}> => {
   try {
     const prompt = `
@@ -156,7 +160,7 @@ export const processNaturalLanguageCommand = async (input: string): Promise<{act
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
-      config: { responseMimeType: 'application/json' }
+      config: { responseMimeType: "application/json" }
     });
     return JSON.parse(response.text || '{}');
   } catch {
@@ -197,7 +201,7 @@ export const generateFinancialQuiz = async (): Promise<QuizQuestion> => {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
-      config: { responseMimeType: 'application/json' }
+      config: { responseMimeType: "application/json" }
     });
     return JSON.parse(response.text || '{}');
   } catch {
@@ -229,7 +233,7 @@ export const generatePersonalizedRoadmap = async (goal: string, financialData: a
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt,
-      config: { responseMimeType: 'application/json' }
+      config: { responseMimeType: "application/json" }
     });
     return JSON.parse(response.text || '[]');
   } catch {
@@ -243,7 +247,7 @@ export const getCreditAdvice = async (score: number, debtCount: number): Promise
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
-      config: { responseMimeType: 'application/json' }
+      config: { responseMimeType: "application/json" }
     });
     return JSON.parse(response.text || '[]');
   } catch {
@@ -279,7 +283,7 @@ export const analyzeTaxDeductibles = async (transactions: Transaction[]): Promis
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt,
-      config: { responseMimeType: 'application/json' }
+      config: { responseMimeType: "application/json" }
     });
     return JSON.parse(response.text || '{}');
   } catch {
@@ -302,7 +306,7 @@ export const simulateInvestmentPortfolio = async (assets: Asset[], monthlyContri
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt,
-      config: { responseMimeType: 'application/json' }
+      config: { responseMimeType: "application/json" }
     });
     return JSON.parse(response.text || '[]');
   } catch {
@@ -322,7 +326,7 @@ export const optimizeFxTransfer = async (amount: number, from: string, to: strin
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
-      config: { responseMimeType: 'application/json' }
+      config: { responseMimeType: "application/json" }
     });
     return JSON.parse(response.text || '{}');
   } catch {
@@ -354,44 +358,5 @@ export const findCheapestPrice = async (productName: string): Promise<{ text: st
   } catch (error) {
     console.error("Search error", error);
     return { text: "I couldn't search for prices right now. Please try again later.", sources: [] };
-  }
-};
-
-export const getRealIPOData = async (): Promise<any[]> => {
-  const MOCK_IPO_DATA = [
-    {
-      id: '1',
-      name: 'TechNova Solutions',
-      symbol: 'NSE:TECHNOVA',
-      status: 'Open',
-      priceRange: '₹450 - ₹480',
-      lotSize: 30,
-      issueSize: '₹500 Cr',
-      openDate: '2024-03-15',
-      closeDate: '2024-03-18',
-      listingDate: '2024-03-21',
-      gmp: 45,
-      subscription: 2.5,
-      sector: 'Technology'
-    }
-  ];
-
-  try {
-    const prompt = `
-      Generate a JSON array of 5 realistic, fictional or real upcoming/open/listed IPOs in India for the current month.
-      Fields: id, name, symbol (TradingView format), status ('Open'|'Upcoming'|'Listed'), priceRange, lotSize (number), issueSize, openDate, closeDate, listingDate, gmp (number), subscription (number), sector.
-      Ensure valid JSON.
-    `;
-    
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt,
-      config: { responseMimeType: 'application/json' }
-    });
-
-    if (!response.text) return MOCK_IPO_DATA;
-    return JSON.parse(response.text);
-  } catch (error) {
-    return MOCK_IPO_DATA;
   }
 };
