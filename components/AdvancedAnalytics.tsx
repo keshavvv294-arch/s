@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Transaction, FinancialSummary } from '../types';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { GitMerge, LineChart, Timer, X, Calendar, TrendingUp } from 'lucide-react';
+import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
+import { GitMerge, LineChart, Timer, X, TrendingUp } from 'lucide-react';
 
 interface AdvancedAnalyticsProps {
   toolId: string;

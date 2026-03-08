@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Debt } from '../types';
-import { Plus, ArrowUpRight, ArrowDownLeft, Trash2, CheckCircle, User, DollarSign, Wallet } from 'lucide-react';
+import { Plus, ArrowUpRight, CheckCircle, Wallet } from 'lucide-react';
 
 interface DebtManagerProps {
   debts: Debt[];

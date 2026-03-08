@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PenTool, X, Copy, Sparkles, Check, MessageSquare } from 'lucide-react';
+import { PenTool, X, Copy, Sparkles, Check } from 'lucide-react';
 import { Transaction } from '../types';
 import { generateNegotiationScript } from '../services/geminiService';
 

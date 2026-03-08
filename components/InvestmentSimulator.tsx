@@ -14,7 +14,7 @@ export const InvestmentSimulator: React.FC<InvestmentSimulatorProps> = ({ onClos
   const [monthlyContribution, setMonthlyContribution] = useState(500);
   const [scenario, setScenario] = useState<'bull' | 'bear' | 'crash'>('bull');
   const [isSimulating, setIsSimulating] = useState(false);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<{ label: string; value: number }[]>([]);
 
   const handleSimulate = async () => {
     setIsSimulating(true);

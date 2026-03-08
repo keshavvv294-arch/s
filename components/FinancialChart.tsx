@@ -48,7 +48,7 @@ export const FinancialChart: React.FC<FinancialChartProps> = ({ transactions }) 
               dataKey="value"
               stroke="none"
             >
-              {expenseData.map((entry, index) => (
+              {expenseData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>

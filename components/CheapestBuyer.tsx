@@ -11,7 +11,7 @@ interface CheapestBuyerProps {
 export const CheapestBuyer: React.FC<CheapestBuyerProps> = ({ onClose }) => {
   const [product, setProduct] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ text: string, sources: any[] } | null>(null);
+  const [result, setResult] = useState<{ text: string, sources: { web?: { uri: string, title: string } }[] } | null>(null);
 
   const handleSearch = async () => {
     if (!product.trim()) return;
@@ -84,7 +84,7 @@ export const CheapestBuyer: React.FC<CheapestBuyerProps> = ({ onClose }) => {
                    <div className="space-y-2">
                       <h4 className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Sources Found</h4>
                       <div className="grid grid-cols-1 gap-2">
-                         {result.sources.map((source: any, index: number) => {
+                         {result.sources.map((source, index: number) => {
                             // Extract title and URL based on Google Search structure (web object)
                             const web = source.web;
                             if (!web) return null;

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, Edit3, DollarSign, X, Check } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, Edit3, X, Check } from 'lucide-react';
 import { FinancialSummary } from '../types';
 
 interface SummaryCardsProps {

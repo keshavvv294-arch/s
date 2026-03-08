@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Microscope, RefreshCw, Briefcase, Home } from 'lucide-react';
+import { X, Microscope } from 'lucide-react';
 import { AreaChart, Area, Tooltip, ResponsiveContainer, XAxis } from 'recharts';
 
 interface DigitalTwinProps {

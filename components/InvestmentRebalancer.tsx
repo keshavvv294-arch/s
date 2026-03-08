@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Asset, ASSET_TYPES } from '../types';
-import { RefreshCw, X, ArrowRight, PieChart } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
+import { RefreshCw, X, ArrowRight } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 
 interface InvestmentRebalancerProps {
   assets: Asset[];

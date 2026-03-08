@@ -48,8 +48,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
          response = await authService.signup(name, email, password);
       }
       onLoginSuccess(response.user);
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed. Please try again.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Authentication failed. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -146,9 +147,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
               className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>{isLogin ? 'Login' : 'Sign Up'} <ArrowRight className="w-5 h-5" /></>}
-            </button>
-          </form>
-        </div>
+          </button>
+        </form>
+      </div>
         
         <div className="p-4 text-center bg-black/20 border-t border-white/5">
            <p className="text-white/40 text-xs">

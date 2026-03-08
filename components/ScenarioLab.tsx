@@ -9,7 +9,6 @@ interface ScenarioLabProps {
 
 export const ScenarioLab: React.FC<ScenarioLabProps> = ({ currentSavings, monthlySavings, onClose }) => {
   const [cost, setCost] = useState<number>(0);
-  const [name, setName] = useState('');
   
   const impact = currentSavings - cost;
   const recoveryMonths = cost > 0 && monthlySavings > 0 ? Math.ceil(cost / monthlySavings) : 0;
@@ -28,7 +27,6 @@ export const ScenarioLab: React.FC<ScenarioLabProps> = ({ currentSavings, monthl
                type="text" 
                placeholder="e.g. Tesla Model 3" 
                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white text-sm mb-3 focus:border-cyan-500 outline-none"
-               onChange={(e) => setName(e.target.value)}
              />
              <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">$</span>

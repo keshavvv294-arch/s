@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Transaction } from '../types';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { Activity, X, TrendingUp } from 'lucide-react';
+import { Activity, X } from 'lucide-react';
 
 interface PredictiveCashFlowProps {
   transactions: Transaction[];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge, Transaction, Asset } from '../types';
-import { Award, Lock } from 'lucide-react';
+import { Award } from 'lucide-react';
 
 interface AchievementsProps {
   transactions: Transaction[];

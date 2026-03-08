@@ -120,7 +120,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onAddTransacti
     }
   };
 
-  const MoodOption = ({ value, icon: Icon, label }: { value: TransactionMood; icon: any; label: string }) => (
+  const MoodOption = ({ value, icon: Icon, label }: { value: TransactionMood; icon: React.ElementType; label: string }) => (
     <button
       type="button"
       onClick={() => { setMood(value); triggerHaptic(); }}

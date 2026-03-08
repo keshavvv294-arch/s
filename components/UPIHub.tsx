@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { QrCode, Share2, Copy, Check, ExternalLink, Zap } from 'lucide-react';
+import { QrCode, Copy, Check, Zap } from 'lucide-react';
 
 interface UPIHubProps {
   userUpiId?: string;

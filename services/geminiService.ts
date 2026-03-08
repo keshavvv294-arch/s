@@ -21,6 +21,7 @@ const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
 const SYSTEM_INSTRUCTION = `
 You are WealthFlow AI, a smart, empathetic, and professional financial assistant.
 Your goal is to help the user manage their money, explain financial concepts (like EMI, ROI, Inflation), and provide savings tips.
+When asked about current asset prices (stocks, crypto, etc.), always aim to provide real-time data using Google Search, preferably from TradingView or other reliable financial sources.
 Keep responses concise, practical, and formatted in Markdown.
 If asked about the user's data, remind them you only see what they provide in the current session.
 `;
@@ -73,27 +74,28 @@ export const lookupAssetSymbol = async (query: string): Promise<{ symbol: string
   try {
     const prompt = `
       Identify the financial asset from this query: "${query}".
+      Use Google Search to find the exact TradingView symbol (e.g., BINANCE:BTCUSDT, NASDAQ:AAPL).
       Return a JSON object with:
-      1. "symbol": The specific TradingView format symbol (e.g., "NASDAQ:AAPL", "NSE:RELIANCE", "BINANCE:BTCUSDT", "MCX:GOLD").
+      1. "symbol": The specific TradingView format symbol.
       2. "name": The full name of the asset.
-      3. "type": Stock, Crypto, Index, Forex, or Future.
+      3. "type": stock, crypto, real-estate, or gold.
       
-      If you are unsure, default to a US listing or the most popular global listing.
       Return ONLY valid JSON.
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: {
-        responseMimeType: "application/json"
+        responseMimeType: "application/json",
+        tools: [{ googleSearch: {} }]
       }
     });
     
     return JSON.parse(response.text || '{}');
   } catch (e) {
     console.error(e);
-    return { symbol: 'N/A', name: query, type: 'Stock' };
+    return { symbol: 'N/A', name: query, type: 'stock' };
   }
 };
 
@@ -150,17 +152,22 @@ export const processNaturalLanguageCommand = async (input: string): Promise<{act
   try {
     const prompt = `
       Interpret this finance command: "${input}".
+      If the user is adding an asset (e.g., "Add 1 BTC"), use Google Search to find the current real-time price from TradingView or other reliable financial sites.
+      
       Return JSON with:
       - "action": "add_transaction" | "add_asset" | "unknown"
-      - "data": object with relevant fields (amount, description, category, type for assets)
+      - "data": object with relevant fields (amount, description, category, type for assets, and "value" for assets representing the current real-time price)
       
       For transactions, infer category from ${CATEGORIES.join(', ')}.
       For assets, infer type from ${Object.keys(ASSET_TYPES).join(', ')}.
     `;
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: prompt,
-      config: { responseMimeType: "application/json" }
+      config: { 
+        responseMimeType: "application/json",
+        tools: [{ googleSearch: {} }]
+      }
     });
     return JSON.parse(response.text || '{}');
   } catch {
@@ -168,26 +175,48 @@ export const processNaturalLanguageCommand = async (input: string): Promise<{act
   }
 };
 
-export const getLatestAssetPrice = async (assetName: string): Promise<number> => {
+export const getLatestAssetPrice = async (assetName: string, symbol?: string): Promise<number> => {
   try {
-    const prompt = `Estimate the current market price of ${assetName} in USD. Return ONLY the number.`;
+    const query = symbol && symbol !== 'N/A' ? `${symbol} (${assetName})` : assetName;
+    const prompt = `
+      Find the absolute latest real-time market price of ${query} in USD.
+      Search reliable financial sources like TradingView, Yahoo Finance, or CoinMarketCap.
+      The current time is ${new Date().toISOString()}.
+      Return ONLY the numerical price value. Do not include currency symbols or text.
+      Example output: 67980.50
+    `;
+    
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt
+      model: 'gemini-3.1-pro-preview',
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }]
+      }
     });
-    const price = parseFloat(response.text?.replace(/[^0-9.]/g, '') || '');
+    
+    const text = response.text?.trim() || '';
+    // Clean the output to ensure only numbers and dots remain
+    const price = parseFloat(text.replace(/[^0-9.]/g, ''));
     return isNaN(price) ? 0 : price;
-  } catch {
+  } catch (e) {
+    console.error("Failed to fetch asset price:", e);
     return 0;
   }
 };
 
 export const getMarketAnalysis = async (symbol: string, name: string): Promise<string> => {
   try {
-    const prompt = `Provide a short, 3-sentence market analysis for ${name} (${symbol}). Is it bullish or bearish currently?`;
+    const prompt = `
+      Provide a concise 3-sentence market analysis for ${name} (${symbol}).
+      Use Google Search to find the latest trends, news, and sentiment (bullish/bearish).
+      The current time is ${new Date().toISOString()}.
+    `;
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt
+      model: 'gemini-3.1-pro-preview',
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }]
+      }
     });
     return response.text || "Analysis unavailable.";
   } catch {

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FileText, X, Sparkles, AlertCircle, Download, Check } from 'lucide-react';
+import { FileText, X, Sparkles, Download } from 'lucide-react';
 import { Transaction } from '../types';
 import { analyzeTaxDeductibles } from '../services/geminiService';
 
@@ -11,7 +11,7 @@ interface SmartTaxAssistantProps {
 
 export const SmartTaxAssistant: React.FC<SmartTaxAssistantProps> = ({ onClose, transactions = [] }) => {
   const [isScanning, setIsScanning] = useState(false);
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<{ totalEstimatedDeduction: number; summary: string; deductibles: { description: string; reason: string; amount: number }[] } | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
   const handleScan = async () => {
@@ -78,7 +78,7 @@ export const SmartTaxAssistant: React.FC<SmartTaxAssistantProps> = ({ onClose, t
                 <h4 className="font-bold text-white mb-3">Identified Items</h4>
                 <div className="space-y-3">
                    {report.deductibles?.length === 0 && <p className="text-white/30 text-center">No deductions found.</p>}
-                   {report.deductibles?.map((item: any, i: number) => (
+                   {report.deductibles?.map((item, i) => (
                       <div key={i} className="bg-white/5 p-3 rounded-xl flex justify-between items-start border border-white/5">
                          <div>
                             <p className="text-white font-medium text-sm">{item.description}</p>

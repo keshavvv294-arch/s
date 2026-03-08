@@ -24,9 +24,6 @@ import { CurrencyHedging } from './CurrencyHedging';
 import { DreamInvest } from './DreamInvest';
 import { DigitalTwin } from './DigitalTwin';
 import { CreditBuilder } from './CreditBuilder';
-import { LifestyleFinance } from './LifestyleFinance';
-import { CommunityPools } from './CommunityPools';
-import { GesturePay } from './GesturePay';
 import { SmartTaxAssistant } from './SmartTaxAssistant';
 import { InvestmentSimulator } from './InvestmentSimulator';
 import { CheapestBuyer } from './CheapestBuyer';
@@ -43,13 +40,13 @@ interface ToolsViewRendererProps {
     debts: Debt[];
     events: EventBudget[];
     shoppingItems: ShoppingItem[];
-    creditHistory: any[];
+    creditHistory: { id: string; date: string; score: number }[];
     currencySymbol: string;
   };
   actions: {
     onAddDebt: (d: Debt) => void;
     onDeleteDebt: (id: string) => void;
-    onAddScore: (s: any) => void;
+    onAddScore: (s: { id: string; date: string; score: number }) => void;
     onDeleteScore: (id: string) => void;
     onAddEvent: (e: EventBudget) => void;
     onDeleteEvent: (id: string) => void;
@@ -82,9 +79,6 @@ export const ToolsViewRenderer: React.FC<ToolsViewRendererProps> = ({ activeTool
   if (activeTool === 'dream-invest') return <DreamInvest onClose={onClose} onInvest={actions.onAddTransaction} />;
   if (activeTool === 'digital-twin') return <DigitalTwin currentNetWorth={data.summary.netWorth} onClose={onClose} />;
   if (activeTool === 'credit-builder') return <CreditBuilder currentScore={data.creditHistory[data.creditHistory.length-1]?.score || 650} debts={data.debts} onClose={onClose} />;
-  if (activeTool === 'lifestyle') return <LifestyleFinance transactions={data.transactions} onClose={onClose} />;
-  if (activeTool === 'community-pool') return <CommunityPools onClose={onClose} onContribute={actions.onAddTransaction} />;
-  if (activeTool === 'gesture-pay') return <GesturePay onClose={onClose} onPay={actions.onAddTransaction} />;
   if (activeTool === 'tax-assistant') return <SmartTaxAssistant onClose={onClose} transactions={data.transactions} />;
   if (activeTool === 'invest-sim') return <InvestmentSimulator onClose={onClose} assets={data.assets} />;
   if (activeTool === 'cheapest-buy') return <CheapestBuyer onClose={onClose} />;

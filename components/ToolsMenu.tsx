@@ -3,13 +3,12 @@ import React, { useState } from 'react';
 import { 
   Calculator, Divide, Percent, DollarSign, TrendingUp, ShieldCheck, Car, 
   Home, X, Flame, BarChart4, Umbrella, CreditCard, Coins, RefreshCw, 
-  Target, Briefcase, Calendar, GraduationCap, Repeat, Search, Scale, 
-  Clock, Heart, BookOpen, PenTool, BarChart3, Plane, ShoppingCart, 
-  QrCode, ArrowLeft, Zap, Layers, ChevronRight, Wand2, GitMerge, 
-  LineChart, FileText, Microscope, Timer, Map, Activity, Globe, 
-  Rocket, Users, Hand, Star, BrainCircuit, Tag, LayoutGrid, Sparkles,
-  // Add missing WalletCards icon
-  WalletCards
+  Target, Calendar, Repeat, Search, Scale, 
+  Heart, PenTool, BarChart3, Plane, ShoppingCart, 
+  ArrowLeft, Layers, ChevronRight, Wand2, GitMerge, 
+  LineChart, FileText, Microscope, Timer, Activity, Globe, 
+  Users, Hand, BrainCircuit, Tag, LayoutGrid, Sparkles,
+  WalletCards, MapPin, GraduationCap
 } from 'lucide-react';
 import { ToolType } from '../types';
 
@@ -20,7 +19,7 @@ interface ToolsMenuProps {
 interface ToolDef {
   id: string;
   name: string;
-  icon: any;
+  icon: React.ElementType;
   color: string;
   desc: string;
   category: string;
@@ -30,7 +29,7 @@ interface ToolDef {
 interface CategoryDef {
   id: string;
   name: string;
-  icon: any;
+  icon: React.ElementType;
   color: string;
   bgGradient: string;
   desc: string;
@@ -42,16 +41,13 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({ onSelectTool }) => {
   
   const tools: ToolDef[] = [
     // Next Gen
-    { id: 'roadmap', name: 'AI Roadmap', icon: Map, color: 'text-indigo-400', desc: 'GenAI Financial Plan', category: 'Next Gen', isNew: true },
+    { id: 'roadmap', name: 'AI Roadmap', icon: MapPin, color: 'text-indigo-400', desc: 'GenAI Financial Plan', category: 'Next Gen', isNew: true },
     { id: 'tax-assistant', name: 'Smart Tax', icon: FileText, color: 'text-blue-400', desc: 'Auto-Detect Deductions', category: 'Next Gen', isNew: true },
     { id: 'invest-sim', name: 'Inv. Sim AI', icon: BrainCircuit, color: 'text-emerald-400', desc: '5-Year Projections', category: 'Next Gen', isNew: true },
     { id: 'predictive-flow', name: 'Future Flow', icon: Activity, color: 'text-blue-400', desc: 'Forecast Balances', category: 'Next Gen' },
     { id: 'hedging', name: 'Forex Hedge', icon: Globe, color: 'text-emerald-400', desc: 'Currency Simulator', category: 'Next Gen' },
     { id: 'digital-twin', name: 'Digital Twin', icon: Microscope, color: 'text-cyan-400', desc: '20-Year Sim', category: 'Next Gen' },
     { id: 'credit-builder', name: 'Credit AI', icon: ShieldCheck, color: 'text-yellow-400', desc: 'Score Improver', category: 'Next Gen' },
-    { id: 'lifestyle', name: 'Life Sync', icon: Heart, color: 'text-rose-400', desc: 'App Integration', category: 'Next Gen' },
-    { id: 'community-pool', name: 'Pools', icon: Users, color: 'text-orange-400', desc: 'Group Savings', category: 'Next Gen' },
-    { id: 'gesture-pay', name: 'Gesture Pay', icon: Hand, color: 'text-teal-400', desc: 'Swipe to Pay', category: 'Next Gen' },
 
     // Pro Features
     { id: 'analytics-pro', name: 'Flow Map', icon: GitMerge, color: 'text-pink-400', desc: 'Sankey Diagram', category: 'Pro Features' },

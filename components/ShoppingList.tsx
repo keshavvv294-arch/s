@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { ShoppingItem, Transaction } from '../types';
-import { Plus, ShoppingCart, Check, Trash2, ArrowRight, Tag, AlertCircle } from 'lucide-react';
+import { ShoppingItem } from '../types';
+import { Plus, ShoppingCart, Check, Trash2, ArrowRight } from 'lucide-react';
 
 interface ShoppingListProps {
   items: ShoppingItem[];
@@ -16,7 +16,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ items, onAddItem, on
   const [newItemName, setNewItemName] = useState('');
   const [estPrice, setEstPrice] = useState('');
   const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
-  const [budget, setBudget] = useState(500); // Simulated monthly shopping budget
+  const [budget] = useState(500); // Simulated monthly shopping budget
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();

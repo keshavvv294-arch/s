@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { EventBudget, Transaction } from '../types';
-import { Plus, Calendar, Trash2, ArrowLeft, Plane, Coffee, ShoppingBag, MapPin, Ticket, Zap, Bed, Car, Check } from 'lucide-react';
+import { Plus, Calendar, Trash2, ArrowLeft, Plane, Coffee, ShoppingBag, Ticket, Zap, Bed, Car, Check, MapPin } from 'lucide-react';
 
 interface EventPlannerProps {
   events: EventBudget[];
@@ -36,7 +36,7 @@ export const EventPlanner: React.FC<EventPlannerProps> = ({ events, transactions
     }
   };
 
-  const addExpense = (category: string, iconStr: string) => {
+  const addExpense = (category: string) => {
     if (!selectedEvent || !quickAmount) return;
     onAddTransaction({
       description: quickDesc || category,
@@ -130,7 +130,7 @@ export const EventPlanner: React.FC<EventPlannerProps> = ({ events, transactions
                  ].map((btn, idx) => (
                     <button 
                       key={idx} 
-                      onClick={() => addExpense(btn.l, '')}
+                      onClick={() => addExpense(btn.l)}
                       disabled={!quickAmount}
                       className="flex flex-col items-center gap-1 group disabled:opacity-40 transition-opacity"
                     >

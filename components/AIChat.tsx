@@ -21,7 +21,7 @@ export const AIChat: React.FC<AIChatProps> = ({ initialMessage }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatSessionRef = useRef<any>(null);
+  const chatSessionRef = useRef<ReturnType<typeof createChatSession> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
 

@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, X, Calendar as CalendarIcon, TrendingDown } from 'lucide-react';
-import { Transaction, CATEGORIES } from '../types';
+import { ChevronLeft, ChevronRight, X, Calendar as CalendarIcon } from 'lucide-react';
+import { Transaction } from '../types';
 
 interface ExpenseCalendarProps {
   transactions: Transaction[];

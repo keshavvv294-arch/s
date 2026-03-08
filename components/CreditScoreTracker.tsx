@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CreditScoreEntry } from '../types';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
 import { Plus, Trash2, Gauge } from 'lucide-react';
 
 interface CreditScoreTrackerProps {

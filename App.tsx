@@ -1,7 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Plus, Settings, Home, User, Wallet, LayoutGrid, TrendingUp, Command, Mic2, Briefcase, Edit2, List, Bot, X, AlertTriangle, WifiOff, ArrowLeft, QrCode, Zap } from 'lucide-react';
-import { SummaryCards } from './components/SummaryCards';
+import { Plus, Home, LayoutGrid, TrendingUp, Command, Mic2, Briefcase, Edit2, List, Bot, QrCode } from 'lucide-react';
 import { TransactionsTab } from './components/TransactionsTab';
 import { TransactionForm } from './components/TransactionForm';
 import { AccountForm } from './components/AccountForm';
@@ -13,13 +12,12 @@ import { InvestmentTab } from './components/InvestmentTab';
 import { CommandPalette } from './components/CommandPalette';
 import { SettingsDrawer } from './components/SettingsDrawer';
 import { BudgetModal } from './components/BudgetModal';
-import { UPIView } from './components/UPIView';
 import { Achievements } from './components/Achievements';
 import { LoginScreen } from './components/LoginScreen';
 import { OnboardingWizard } from './components/OnboardingWizard';
 import { authService } from './services/authService';
 import { processNaturalLanguageCommand } from './services/geminiService';
-import { Transaction, FinancialSummary, ToolType, Asset, Notification, UserProfile, Budget, AppSettings, CURRENCIES, Debt, EventBudget, ShoppingItem, CreditScoreEntry, Account } from './types';
+import { Transaction, FinancialSummary, ToolType, Asset, UserProfile, Budget, AppSettings, CURRENCIES, Debt, EventBudget, ShoppingItem, CreditScoreEntry, Account } from './types';
 
 const INITIAL_ACCOUNTS: Account[] = [
   { id: '1', name: 'Main Wallet', type: 'cash', initialBalance: 0, currency: 'USD', color: 'bg-indigo-500' }
@@ -53,72 +51,65 @@ function App() {
   const [activeTool, setActiveTool] = useState<ToolType>('none');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [isOffline] = useState(!navigator.onLine);
   const [dailyQuote] = useState(QUOTES[0]);
-  const [aiContextMessage, setAiContextMessage] = useState<string | null>(null);
   
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('finance_transactions');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [accounts, setAccounts] = useState<Account[]>(() => {
-    const saved = localStorage.getItem('finance_accounts');
-    return saved ? JSON.parse(saved) : INITIAL_ACCOUNTS;
-  });
-
-  const [assets, setAssets] = useState<Asset[]>(() => {
-    const saved = localStorage.getItem('finance_assets');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [debts, setDebts] = useState<Debt[]>(() => {
-    const saved = localStorage.getItem('finance_debts');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [creditHistory, setCreditHistory] = useState<CreditScoreEntry[]>(() => {
-    const saved = localStorage.getItem('finance_credit_score');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [events, setEvents] = useState<EventBudget[]>(() => {
-    const saved = localStorage.getItem('finance_events');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>(() => {
-    const saved = localStorage.getItem('finance_shopping');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [budgets, setBudgets] = useState<Budget[]>(() => {
-    const saved = localStorage.getItem('finance_budgets');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [settings, setSettings] = useState<AppSettings>(() => {
-    const saved = localStorage.getItem('finance_settings');
-    return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
-  });
-
-  const [salary, setSalary] = useState<number>(() => {
-    const saved = localStorage.getItem('finance_salary');
-    return saved ? Number(saved) : 0;
-  });
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [creditHistory] = useState<CreditScoreEntry[]>([]);
+  const [events] = useState<EventBudget[]>([]);
+  const [shoppingItems] = useState<ShoppingItem[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [settings, setSettings] = useState<AppSettings>(INITIAL_SETTINGS);
+  const [salary, setSalary] = useState<number>(0);
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
+  // Fetch Global Data
   useEffect(() => {
-    const checkAuth = async () => {
-      const user = await authService.getCurrentUser();
+    if (isAuthenticated) {
+      fetch('/api/data')
+        .then(res => res.json())
+        .then(data => {
+          if (data.transactions) setTransactions(data.transactions);
+          if (data.accounts) setAccounts(data.accounts);
+          if (data.assets) setAssets(data.assets);
+          if (data.debts) setDebts(data.debts);
+          if (data.budgets) setBudgets(data.budgets);
+          if (data.settings) setSettings(data.settings);
+          if (data.salary) setSalary(data.salary);
+        })
+        .catch(err => console.error('Failed to fetch data', err));
+    }
+  }, [isAuthenticated]);
+
+  // Save Global Data
+  useEffect(() => {
+    if (isAuthenticated) {
+      const timeout = setTimeout(() => {
+        fetch('/api/data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactions, accounts, assets, debts, budgets, settings, salary })
+        }).catch(err => console.error('Failed to save data', err));
+      }, 1000); // Debounce saves
+      return () => clearTimeout(timeout);
+    }
+  }, [transactions, accounts, assets, debts, budgets, settings, salary, isAuthenticated]);
+
+  useEffect(() => {
+    const unsubscribe = authService.onAuthStateChanged((user) => {
       if (user) {
         setUserProfile(user);
         setIsAuthenticated(true);
+      } else {
+        setUserProfile(null);
+        setIsAuthenticated(false);
       }
-    };
-    checkAuth();
+    });
+    return () => unsubscribe();
   }, []);
   
   const currencySymbol = CURRENCIES[settings.currency as keyof typeof CURRENCIES] || '$';
@@ -132,7 +123,7 @@ function App() {
        else totalExpense += t.amount;
     });
 
-    let accountsBalance = accounts.reduce((sum, acc) => sum + acc.initialBalance, 0);
+    const accountsBalance = accounts.reduce((sum, acc) => sum + acc.initialBalance, 0);
     const currentBalance = accountsBalance + totalIncome - totalExpense;
     const netWorth = assets.reduce((sum, a) => sum + (a.amount * a.value), 0) + currentBalance;
     const savingsRate = totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome : 0;
@@ -182,14 +173,6 @@ function App() {
 
   const handleSalaryUpdate = (amount: number) => {
     setSalary(amount);
-    setNotifications(prev => [...prev, {
-      id: Date.now().toString(),
-      title: "Salary Updated",
-      message: `Your monthly income has been set to ${currencySymbol}${amount}.`,
-      type: "success",
-      date: new Date(),
-      read: false
-    }]);
     triggerHaptic();
   };
 
@@ -204,7 +187,7 @@ function App() {
     setUserProfile(null);
   };
 
-  const handleOnboardingComplete = async (newSalary: number, newBudgets: Budget[], goal: string) => {
+  const handleOnboardingComplete = async (newSalary: number, newBudgets: Budget[]) => {
     setSalary(newSalary);
     setBudgets(newBudgets);
     
@@ -227,7 +210,7 @@ function App() {
 
   const startGlobalVoice = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).Recognition;
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       const recognition = new SpeechRecognition();
       recognition.onstart = () => setIsGlobalListening(true);
       recognition.onend = () => setIsGlobalListening(false);
@@ -272,9 +255,8 @@ function App() {
         )}
 
         {activeTab === 'transactions' && <TransactionsTab transactions={transactions} onDelete={(id) => setTransactions(t => t.filter(x => x.id !== id))} onDeleteBulk={(ids) => setTransactions(prev => prev.filter(t => !ids.includes(t.id)))} onDuplicate={(t) => handleAddTransaction(t)} onToggleStatus={(id) => setTransactions(prev => prev.map(t => t.id === id ? { ...t, status: t.status === 'cleared' ? 'pending' : 'cleared' } : t))} currencySymbol={currencySymbol} />}
-        {activeTab === 'chat' && <AIChat initialMessage={aiContextMessage} />}
-        {activeTab === 'invest' && <InvestmentTab assets={assets} onAddAsset={(a) => setAssets([...assets, a])} onDeleteAsset={(id) => setAssets(prev => prev.filter(a => a.id !== id))} onUpdateAssetValue={(id, val) => setAssets(prev => prev.map(a => a.id === id ? { ...a, value: val } : a))} privacyMode={settings.privacyMode} />}
-        {activeTab === 'upi' && <UPIView userUpiId={userProfile.upiId} onUpdateUpi={(id) => authService.updateProfile({ upiId: id })} onAddTransaction={handleAddTransaction} transactions={transactions} />}
+        {activeTab === 'chat' && <AIChat initialMessage={null} />}
+        {activeTab === 'invest' && <InvestmentTab assets={assets} onAddAsset={(a) => setAssets([...assets, a])} onDeleteAsset={(id) => setAssets(prev => prev.filter(a => a.id !== id))} onUpdateAssetValue={(id, val, updated) => setAssets(prev => prev.map(a => a.id === id ? { ...a, value: val, lastUpdated: updated || a.lastUpdated } : a))} privacyMode={settings.privacyMode} />}
         
         {activeTab === 'tools' && (
           <div className="animate-in fade-in duration-500">
@@ -315,21 +297,46 @@ function App() {
         <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={Home} label="Home" />
         <NavButton active={activeTab === 'transactions'} onClick={() => setActiveTab('transactions')} icon={List} label="Activity" />
         <NavButton active={activeTab === 'chat'} onClick={() => setActiveTab('chat')} icon={Bot} label="Wealth AI" />
-        <NavButton active={activeTab === 'upi'} onClick={() => setActiveTab('upi')} icon={QrCode} label="Pay" />
         <NavButton active={activeTab === 'invest'} onClick={() => setActiveTab('invest')} icon={TrendingUp} label="Assets" />
         <NavButton active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={LayoutGrid} label="More" />
       </nav>
 
       {isFormOpen && <TransactionForm onAddTransaction={handleAddTransaction} onClose={() => setIsFormOpen(false)} accounts={accounts} />}
       {isAccountFormOpen && <AccountForm onAddAccount={(a) => setAccounts([...accounts, {...a, id: Date.now().toString()}])} onClose={() => setIsAccountFormOpen(false)} />}
-      {isCommandOpen && <CommandPalette isOpen={isCommandOpen} onClose={() => setIsCommandOpen(false)} onExecute={(cmd) => { if(cmd.action==='add_transaction') handleAddTransaction({...cmd.data, date: new Date().toISOString().split('T')[0]}); }} />}
+      {isCommandOpen && <CommandPalette isOpen={isCommandOpen} onClose={() => setIsCommandOpen(false)} onExecute={(cmd) => { 
+        if(cmd.action==='add_transaction') {
+          handleAddTransaction({ 
+            description: cmd.data?.description || 'Voice Transaction', 
+            amount: cmd.data?.amount || 0, 
+            category: cmd.data?.category || 'Other', 
+            type: cmd.data?.type || 'expense', 
+            date: new Date().toISOString().split('T')[0] 
+          }); 
+        } else if (cmd.action === 'add_asset') {
+          setAssets(prev => [...prev, {
+            id: Date.now().toString(),
+            name: cmd.data?.description || cmd.data?.name || 'New Asset',
+            amount: cmd.data?.amount || 1,
+            value: cmd.data?.value || 0,
+            type: cmd.data?.type || 'stock',
+            currency: 'USD'
+          }]);
+        }
+      }} />}
       {isBudgetModalOpen && <BudgetModal budgets={budgets} onSave={setBudgets} onClose={() => setIsBudgetModalOpen(false)} currencySymbol={currencySymbol} />}
       <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} settings={settings} onUpdateSettings={(s) => setSettings(p => ({...p, ...s}))} onExport={()=>{}} onImport={()=>{}} onResetData={()=>{}} counts={{ transactions: transactions.length, assets: assets.length }} />
     </div>
   );
 }
 
-const NavButton = ({ active, onClick, icon: Icon, label }: any) => (
+interface NavButtonProps {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ElementType;
+  label: string;
+}
+
+const NavButton = ({ active, onClick, icon: Icon, label }: NavButtonProps) => (
   <button onClick={onClick} className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all ${active ? 'text-indigo-400' : 'text-white/20 hover:text-white/40'}`}>
     <div className={`p-2 rounded-xl transition-all ${active ? 'bg-indigo-500/10' : ''}`}><Icon className="w-6 h-6" strokeWidth={active ? 3 : 2} /></div>
     <span className={`text-[9px] font-black uppercase tracking-wider transition-all ${active ? 'opacity-100' : 'opacity-40'}`}>{label}</span>

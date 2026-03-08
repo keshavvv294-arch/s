@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AutomationRule } from '../types';
-import { Wand2, Plus, Trash2, Check, X } from 'lucide-react';
+import { Wand2, Plus, Trash2, X } from 'lucide-react';
 
 interface SmartRulesProps {
   onClose: () => void;

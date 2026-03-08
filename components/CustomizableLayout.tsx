@@ -42,11 +42,15 @@ export const CustomizableLayout: React.FC<CustomizableLayoutProps> = ({ viewId, 
         id: w.id,
         visible: true,
         order: prev.length + idx,
-        size: w.defaultSize || 'full'
+        size: w.defaultSize || 'full' as WidgetSize
       }));
-      return [...prev, ...newWidgets];
+      
+      if (newWidgets.length > 0) {
+        return [...prev, ...newWidgets];
+      }
+      return prev;
     });
-  }, [widgets.length]);
+  }, [widgets]);
 
   useEffect(() => {
     localStorage.setItem(`layout_${viewId}`, JSON.stringify(layout));

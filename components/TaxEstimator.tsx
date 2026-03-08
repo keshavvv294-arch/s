@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, X, DollarSign, Calculator } from 'lucide-react';
+import { FileText, X, DollarSign } from 'lucide-react';
 
 interface TaxEstimatorProps {
   onClose: () => void;

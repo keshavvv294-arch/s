@@ -12,7 +12,7 @@ interface InvestmentTabProps {
   assets: Asset[];
   onAddAsset: (asset: Asset) => void;
   onDeleteAsset: (id: string) => void;
-  onUpdateAssetValue: (id: string, newValue: number) => void;
+  onUpdateAssetValue: (id: string, newValue: number, lastUpdated?: string) => void;
   privacyMode: boolean;
 }
 
@@ -69,7 +69,7 @@ export const InvestmentTab: React.FC<InvestmentTabProps> = ({ assets, onAddAsset
     try {
       const result = await lookupAssetSymbol(query);
       setFoundAsset(result);
-      const price = await getLatestAssetPrice(result.name);
+      const price = await getLatestAssetPrice(result.name, result.symbol);
       if (price) setPriceToAdd(price.toString());
     } catch (e) {
       console.error(e);
@@ -88,7 +88,8 @@ export const InvestmentTab: React.FC<InvestmentTabProps> = ({ assets, onAddAsset
         amount: addToWatchlist ? 0 : parseFloat(amountToAdd) || 0,
         value: parseFloat(priceToAdd),
         currency: 'USD',
-        isWatchlist: addToWatchlist
+        isWatchlist: addToWatchlist,
+        lastUpdated: new Date().toISOString()
       });
       setFoundAsset(null);
       setQuery('');
@@ -102,8 +103,8 @@ export const InvestmentTab: React.FC<InvestmentTabProps> = ({ assets, onAddAsset
     setIsSyncing(true);
     for (const asset of assets) {
       if (['stock', 'crypto', 'gold'].includes(asset.type)) {
-         const newPrice = await getLatestAssetPrice(asset.name);
-         if (newPrice) onUpdateAssetValue(asset.id, newPrice);
+         const newPrice = await getLatestAssetPrice(asset.name, asset.symbol);
+         if (newPrice) onUpdateAssetValue(asset.id, newPrice, new Date().toISOString());
       }
     }
     setIsSyncing(false);
@@ -116,7 +117,7 @@ export const InvestmentTab: React.FC<InvestmentTabProps> = ({ assets, onAddAsset
     try {
       const text = await getMarketAnalysis(asset.symbol, asset.name);
       setAnalysis(text);
-    } catch (e) {
+    } catch {
       setAnalysis("Could not load analysis.");
     } finally {
       setIsAnalyzing(false);
@@ -265,8 +266,14 @@ export const InvestmentTab: React.FC<InvestmentTabProps> = ({ assets, onAddAsset
                     <p className="font-bold text-white text-lg">{foundAsset.name}</p>
                     <p className="text-xs text-indigo-300 font-mono">{foundAsset.symbol}</p>
                  </div>
-                 <div className="px-2 py-1 rounded bg-white/10 text-[10px] text-white/60 uppercase font-bold">
-                    {foundAsset.type}
+                 <div className="flex flex-col items-end gap-1">
+                    <div className="px-2 py-1 rounded bg-white/10 text-[10px] text-white/60 uppercase font-bold">
+                       {foundAsset.type}
+                    </div>
+                    <div className="flex items-center gap-1 text-[9px] text-emerald-400 font-bold uppercase tracking-wider">
+                       <Activity className="w-3 h-3 animate-pulse" />
+                       Live Data
+                    </div>
                  </div>
               </div>
               
@@ -343,6 +350,11 @@ export const InvestmentTab: React.FC<InvestmentTabProps> = ({ assets, onAddAsset
                     <p className="text-xs text-white/40 mt-0.5">
                        {asset.amount} units @ ${privacyMode ? '••••' : `$${asset.value.toFixed(2)}`}
                     </p>
+                    {asset.lastUpdated && (
+                      <p className="text-[8px] text-white/20 uppercase mt-1">
+                        Updated {new Date(asset.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
                  </div>
               </div>
               

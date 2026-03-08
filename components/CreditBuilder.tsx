@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { X, ShieldCheck, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { X, ShieldCheck, Loader2 } from 'lucide-react';
 import { Debt } from '../types';
 import { getCreditAdvice } from '../services/geminiService';
 
@@ -11,7 +11,7 @@ interface CreditBuilderProps {
 }
 
 export const CreditBuilder: React.FC<CreditBuilderProps> = ({ currentScore, debts, onClose }) => {
-  const [actions, setActions] = useState<any[]>([]);
+  const [actions, setActions] = useState<{ title: string; impact: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

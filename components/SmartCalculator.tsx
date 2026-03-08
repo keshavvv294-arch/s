@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, PieChart as PieIcon, TrendingUp, DollarSign } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip, XAxis, YAxis } from 'recharts';
+import { X, PieChart as PieIcon, TrendingUp } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts';
 
 interface SmartCalculatorProps {
   toolId: string;
@@ -10,7 +10,7 @@ interface SmartCalculatorProps {
 
 export const SmartCalculator: React.FC<SmartCalculatorProps> = ({ toolId, onClose }) => {
   const [inputs, setInputs] = useState<Record<string, number>>({});
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{ total: number; invested?: number; gain?: number; graph?: any[]; emi?: number; principal?: number; interest?: number } | null>(null);
 
   // Default Configurations based on Tool ID
   const getConfig = () => {
@@ -171,11 +171,11 @@ export const SmartCalculator: React.FC<SmartCalculatorProps> = ({ toolId, onClos
           <div className="grid grid-cols-2 gap-4 mb-6">
              <div className="bg-white/5 p-3 rounded-xl">
                 <p className="text-xs text-white/40">Invested</p>
-                <p className="text-lg font-bold text-white">${result.invested.toLocaleString()}</p>
+                <p className="text-lg font-bold text-white">${result.invested?.toLocaleString() || '0'}</p>
              </div>
              <div className="bg-white/5 p-3 rounded-xl border border-emerald-500/20">
                 <p className="text-xs text-white/40">Wealth Gained</p>
-                <p className="text-lg font-bold text-emerald-400">+${result.gain.toLocaleString()}</p>
+                <p className="text-lg font-bold text-emerald-400">+${result.gain?.toLocaleString() || '0'}</p>
              </div>
           </div>
        )}
@@ -184,11 +184,11 @@ export const SmartCalculator: React.FC<SmartCalculatorProps> = ({ toolId, onClos
           <div className="grid grid-cols-2 gap-4 mb-6">
              <div className="bg-white/5 p-3 rounded-xl">
                 <p className="text-xs text-white/40">Principal</p>
-                <p className="text-lg font-bold text-indigo-400">${result.principal.toLocaleString()}</p>
+                <p className="text-lg font-bold text-indigo-400">${result.principal?.toLocaleString() || '0'}</p>
              </div>
              <div className="bg-white/5 p-3 rounded-xl border border-rose-500/20">
                 <p className="text-xs text-white/40">Interest Payable</p>
-                <p className="text-lg font-bold text-rose-400">${result.interest.toFixed(0)}</p>
+                <p className="text-lg font-bold text-rose-400">${result.interest?.toFixed(0) || '0'}</p>
              </div>
           </div>
        )}

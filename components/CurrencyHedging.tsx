@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Globe, Lock, RefreshCw, ArrowRight } from 'lucide-react';
+import { X, Globe, Lock, RefreshCw } from 'lucide-react';
 import { getRealForexRate } from '../services/geminiService';
 
 interface CurrencyHedgingProps {

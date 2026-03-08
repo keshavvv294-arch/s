@@ -1,159 +1,80 @@
 
-import { UserProfile, UserAuth } from "../types";
-
-export type AuthProvider = 'google' | 'microsoft' | 'linkedin' | 'github';
+import { UserProfile } from "../types";
 
 interface AuthResponse {
   user: UserProfile;
   token: string;
 }
 
-const STORAGE_KEY_USERS = 'finance_users_db';
-const STORAGE_KEY_SESSION = 'finance_session_token';
-
-// Helper to simulate DB
-const getDB = (): UserAuth[] => {
-  const data = localStorage.getItem(STORAGE_KEY_USERS);
-  return data ? JSON.parse(data) : [];
-};
-
-const saveDB = (users: UserAuth[]) => {
-  localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
-};
-
 export const authService = {
   // 1. Sign Up
   signup: async (name: string, email: string, password: string): Promise<AuthResponse> => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const users = getDB();
-        if (users.find(u => u.email === email)) {
-          reject(new Error('User already exists'));
-          return;
-        }
-
-        const newUser: UserAuth = {
-          id: Date.now().toString(),
-          email,
-          passwordHash: btoa(password), // Simple base64 for demo (NOT secure for real prod)
-          profile: {
-            id: Date.now().toString(),
-            name,
-            email,
-            avatar: 'indigo',
-            level: 1,
-            xp: 0,
-            title: 'Novice Saver',
-            joinDate: new Date().toISOString(),
-            streak: 0,
-            persona: 'The Saver',
-            onboardingComplete: false
-          }
-        };
-
-        users.push(newUser);
-        saveDB(users);
-        
-        // Auto login
-        const token = `token-${newUser.id}-${Date.now()}`;
-        localStorage.setItem(STORAGE_KEY_SESSION, token);
-        localStorage.setItem('current_user_id', newUser.id);
-
-        resolve({ user: newUser.profile, token });
-      }, 800);
+    const response = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
     });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Signup failed');
+    }
+    const data = await response.json();
+    localStorage.setItem('wealthflow_user', JSON.stringify(data.user));
+    localStorage.setItem('wealthflow_token', data.token);
+    return data;
   },
 
   // 2. Login
   loginWithEmail: async (email: string, password: string): Promise<AuthResponse> => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const users = getDB();
-        const user = users.find(u => u.email === email && u.passwordHash === btoa(password));
-
-        if (user) {
-          const token = `token-${user.id}-${Date.now()}`;
-          localStorage.setItem(STORAGE_KEY_SESSION, token);
-          localStorage.setItem('current_user_id', user.id);
-          resolve({ user: user.profile, token });
-        } else {
-          reject(new Error('Invalid email or password'));
-        }
-      }, 800);
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
     });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Login failed');
+    }
+    const data = await response.json();
+    localStorage.setItem('wealthflow_user', JSON.stringify(data.user));
+    localStorage.setItem('wealthflow_token', data.token);
+    return data;
   },
 
-  // 3. Social Login (Mock)
-  loginWithSocial: async (provider: AuthProvider): Promise<AuthResponse> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Create a mock user if social login is used
-        const mockEmail = `user@${provider}.com`;
-        const users = getDB();
-        let user = users.find(u => u.email === mockEmail);
-
-        if (!user) {
-           user = {
-             id: Date.now().toString(),
-             email: mockEmail,
-             passwordHash: 'social-login',
-             profile: {
-               id: Date.now().toString(),
-               name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-               email: mockEmail,
-               avatar: 'indigo',
-               level: 1,
-               xp: 500,
-               title: 'Social Saver',
-               joinDate: new Date().toISOString(),
-               streak: 1,
-               persona: 'Connector',
-               onboardingComplete: false
-             }
-           };
-           users.push(user);
-           saveDB(users);
-        }
-
-        const token = `social-token-${Date.now()}`;
-        localStorage.setItem(STORAGE_KEY_SESSION, token);
-        localStorage.setItem('current_user_id', user.id);
-        
-        resolve({ user: user.profile, token });
-      }, 1000);
-    });
-  },
-
-  // 4. Update Profile (e.g. after Onboarding)
+  // 4. Update Profile
   updateProfile: async (updates: Partial<UserProfile>): Promise<UserProfile> => {
-     const userId = localStorage.getItem('current_user_id');
-     if (!userId) throw new Error("No user logged in");
+    const savedUser = localStorage.getItem('wealthflow_user');
+    if (!savedUser) throw new Error("No user logged in");
+    const user = JSON.parse(savedUser);
 
-     const users = getDB();
-     const userIndex = users.findIndex(u => u.id === userId);
-     
-     if (userIndex > -1) {
-        users[userIndex].profile = { ...users[userIndex].profile, ...updates };
-        saveDB(users);
-        return users[userIndex].profile;
-     }
-     throw new Error("User not found");
+    const response = await fetch('/api/auth/update-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, updates })
+    });
+    if (!response.ok) {
+      throw new Error('Update failed');
+    }
+    const updatedUser = await response.json();
+    localStorage.setItem('wealthflow_user', JSON.stringify(updatedUser));
+    return updatedUser;
   },
 
   // 5. Check Session
   getCurrentUser: async (): Promise<UserProfile | null> => {
-     const token = localStorage.getItem(STORAGE_KEY_SESSION);
-     const userId = localStorage.getItem('current_user_id');
-     
-     if (!token || !userId) return null;
-
-     const users = getDB();
-     const user = users.find(u => u.id === userId);
-     return user ? user.profile : null;
+    const savedUser = localStorage.getItem('wealthflow_user');
+    return savedUser ? JSON.parse(savedUser) : null;
   },
 
-  logout: () => {
-    localStorage.removeItem(STORAGE_KEY_SESSION);
-    localStorage.removeItem('current_user_id');
+  // 6. Auth State Listener (Simplified for custom auth)
+  onAuthStateChanged: (callback: (user: UserProfile | null) => void) => {
+    const user = localStorage.getItem('wealthflow_user');
+    callback(user ? JSON.parse(user) : null);
+    return () => {};
+  },
+
+  logout: async () => {
+    localStorage.removeItem('wealthflow_user');
+    localStorage.removeItem('wealthflow_token');
   }
 };

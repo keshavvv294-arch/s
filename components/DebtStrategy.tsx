@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Debt } from '../types';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ShieldCheck, TrendingDown, Info, X } from 'lucide-react';
+import { ShieldCheck, Info, X } from 'lucide-react';
 
 interface DebtStrategyProps {
   debts: Debt[];
@@ -18,8 +18,8 @@ export const DebtStrategy: React.FC<DebtStrategyProps> = ({ debts, onClose }) =>
     minPayment: d.minPayment || d.amount * 0.03 // Default 3% min pay
   }));
 
-  const calculatePayoff = (strategy: 'snowball' | 'avalanche') => {
-    let sortedDebts = [...myDebts].map(d => ({...d, currentBalance: d.amount}));
+  const calculatePayoff = useCallback((strategy: 'snowball' | 'avalanche') => {
+    const sortedDebts = [...myDebts].map(d => ({...d, currentBalance: d.amount}));
     
     if (strategy === 'snowball') {
       sortedDebts.sort((a, b) => a.amount - b.amount); // Smallest balance first
@@ -34,13 +34,11 @@ export const DebtStrategy: React.FC<DebtStrategyProps> = ({ debts, onClose }) =>
 
     while (totalBalance > 0 && month < 120) { // Cap at 10 years
       let budget = monthlyBudget;
-      let monthInterest = 0;
 
       // 1. Pay minimums
       sortedDebts.forEach(debt => {
         if (debt.currentBalance > 0) {
           const interest = debt.currentBalance * (debt.interestRate / 100 / 12);
-          monthInterest += interest;
           totalInterestPaid += interest;
           debt.currentBalance += interest;
           
@@ -68,10 +66,10 @@ export const DebtStrategy: React.FC<DebtStrategyProps> = ({ debts, onClose }) =>
     }
 
     return { timeline, totalInterestPaid, months: month };
-  };
+  }, [monthlyBudget, myDebts]);
 
-  const snowball = useMemo(() => calculatePayoff('snowball'), [monthlyBudget, myDebts]);
-  const avalanche = useMemo(() => calculatePayoff('avalanche'), [monthlyBudget, myDebts]);
+  const snowball = useMemo(() => calculatePayoff('snowball'), [calculatePayoff]);
+  const avalanche = useMemo(() => calculatePayoff('avalanche'), [calculatePayoff]);
 
   const chartData = snowball.timeline.map((point, i) => ({
     month: point.month,

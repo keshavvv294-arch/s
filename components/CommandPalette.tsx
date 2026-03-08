@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Mic, Send, X, Command, Sparkles, Loader2 } from 'lucide-react';
+import { Mic, X, Command, Sparkles, Loader2 } from 'lucide-react';
 import { processNaturalLanguageCommand } from '../services/geminiService';
 
 interface CommandPaletteProps {
-  onExecute: (action: any) => void;
+  onExecute: (action: { action: string; data: Record<string, any> }) => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -43,8 +43,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onExecute, isOpe
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setInput(transcript);
-        // Optional: Auto-submit on voice end
-        // handleSubmit(); 
       };
       recognition.start();
     } else {

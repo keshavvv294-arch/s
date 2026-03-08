@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, Eye, EyeOff, Download, Upload, Trash2, Fingerprint, Moon, Sun, Palette, Globe, RefreshCcw, Bell, Volume2, Smartphone, Lock } from 'lucide-react';
+import { X, EyeOff, Download, Upload, Trash2, Palette, Globe, RefreshCcw, Bell, Volume2, Smartphone } from 'lucide-react';
 import { AppSettings, CURRENCIES } from '../types';
 
 interface SettingsDrawerProps {

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Rocket, Plus, DollarSign, Trash2 } from 'lucide-react';
+import { X, Rocket, Plus } from 'lucide-react';
 import { Transaction } from '../types';
 
 interface DreamInvestProps {

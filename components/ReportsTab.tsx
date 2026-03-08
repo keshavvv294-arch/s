@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie, Legend } from 'recharts';
 import { Transaction, FinancialSummary, Asset, Budget } from '../types';
-import { TrendingUp, TrendingDown, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Target, Printer, Filter, Smile } from 'lucide-react';
+import { Calendar, ArrowUpRight, Target, Printer, Smile } from 'lucide-react';
 
 interface ReportsTabProps {
   transactions: Transaction[];
@@ -219,7 +219,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ transactions, assets, su
                         cursor={{fill: 'rgba(255,255,255,0.05)'}}
                      />
                      <Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]}>
-                        {moodData.map((entry, index) => (
+                        {moodData.map((_, index) => (
                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                      </Bar>

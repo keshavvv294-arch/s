@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { FinancialSummary, Debt, Asset } from '../types';
-import { X, Map, Sparkles, CheckCircle, Target, ArrowRight } from 'lucide-react';
+import { X, Map, Sparkles, Target, ArrowRight } from 'lucide-react';
 import { generatePersonalizedRoadmap } from '../services/geminiService';
 
 interface FinancialRoadmapProps {
@@ -14,7 +14,7 @@ interface FinancialRoadmapProps {
 export const FinancialRoadmap: React.FC<FinancialRoadmapProps> = ({ summary, debts, assets, onClose }) => {
   const [goal, setGoal] = useState('');
   const [loading, setLoading] = useState(false);
-  const [roadmap, setRoadmap] = useState<any[]>([]);
+  const [roadmap, setRoadmap] = useState<{ month: string; amount: string; action: string }[]>([]);
 
   const generateRoadmap = async () => {
     if (!goal) return;
