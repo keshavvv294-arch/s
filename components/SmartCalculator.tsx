@@ -44,6 +44,54 @@ export const SmartCalculator: React.FC<SmartCalculatorProps> = ({ toolId, onClos
             ],
             type: 'simple'
          };
+      case 'net-worth-projector':
+         return {
+            title: 'Net Worth Projector',
+            fields: [
+               { id: 'current', label: 'Current Net Worth ($)', def: 50000 },
+               { id: 'monthly', label: 'Monthly Savings ($)', def: 1000 },
+               { id: 'rate', label: 'Expected Return (%)', def: 8 },
+               { id: 'years', label: 'Years to Project', def: 10 }
+            ],
+            type: 'growth'
+         };
+      case 'currency-converter':
+         return {
+            title: 'Currency Converter',
+            fields: [
+               { id: 'amount', label: 'Amount', def: 100 },
+               { id: 'rate', label: 'Exchange Rate', def: 1.1 }
+            ],
+            type: 'simple'
+         };
+      case 'emergency-fund':
+         return {
+            title: 'Emergency Fund',
+            fields: [
+               { id: 'expenses', label: 'Monthly Expenses ($)', def: 3000 },
+               { id: 'months', label: 'Months to Cover', def: 6 }
+            ],
+            type: 'simple'
+         };
+      case 'debt-snowball':
+         return {
+            title: 'Debt Snowball',
+            fields: [
+               { id: 'totalDebt', label: 'Total Debt ($)', def: 15000 },
+               { id: 'monthlyPay', label: 'Monthly Payment ($)', def: 500 },
+               { id: 'avgRate', label: 'Avg Interest (%)', def: 12 }
+            ],
+            type: 'breakdown'
+         };
+      case 'subscription-optimizer':
+         return {
+            title: 'Subscription Optimizer',
+            fields: [
+               { id: 'monthlySubs', label: 'Total Monthly Subs ($)', def: 150 },
+               { id: 'cutPercent', label: 'Target Cut (%)', def: 20 }
+            ],
+            type: 'simple'
+         };
       default: // Generic fallback for others
         return {
            title: toolId.replace(/-/g, ' ').toUpperCase(),
@@ -99,6 +147,61 @@ export const SmartCalculator: React.FC<SmartCalculatorProps> = ({ toolId, onClos
        const gain = inputs.returned - inputs.invested;
        const roi = (gain / inputs.invested) * 100;
        setResult({ total: roi, gain });
+    } else if (toolId === 'net-worth-projector') {
+       const p = inputs.current;
+       const m = inputs.monthly;
+       const r = inputs.rate / 100 / 12;
+       const n = inputs.years * 12;
+       
+       const fvPrincipal = p * Math.pow(1 + r, n);
+       const fvContributions = m * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+       const total = fvPrincipal + fvContributions;
+       const invested = p + (m * n);
+
+       const graphData = [];
+       for(let i=1; i<=inputs.years; i++) {
+          const months = i * 12;
+          const valP = p * Math.pow(1 + r, months);
+          const valC = m * ((Math.pow(1 + r, months) - 1) / r) * (1 + r);
+          graphData.push({ year: i, value: Math.round(valP + valC), invested: Math.round(p + (m * months)) });
+       }
+
+       setResult({ total, invested, gain: total - invested, graph: graphData });
+    } else if (toolId === 'currency-converter') {
+       setResult({ total: inputs.amount * inputs.rate, gain: 0 });
+    } else if (toolId === 'emergency-fund') {
+       setResult({ total: inputs.expenses * inputs.months, gain: 0 });
+    } else if (toolId === 'debt-snowball') {
+       const p = inputs.totalDebt;
+       const m = inputs.monthlyPay;
+       const r = inputs.avgRate / 100 / 12;
+       
+       // Rough approximation of months to payoff
+       let months = 0;
+       let balance = p;
+       let totalInterest = 0;
+       
+       if (m > p * r) {
+         while (balance > 0 && months < 360) {
+           const interest = balance * r;
+           totalInterest += interest;
+           balance = balance + interest - m;
+           months++;
+         }
+       } else {
+         months = 999; // Never pays off
+       }
+
+       setResult({ 
+          total: p + totalInterest, 
+          emi: m, 
+          principal: p, 
+          interest: totalInterest 
+       });
+    } else if (toolId === 'subscription-optimizer') {
+       const savings = inputs.monthlySubs * (inputs.cutPercent / 100);
+       const annualSavings = savings * 12;
+       setResult({ total: annualSavings, gain: savings });
     }
   }, [inputs, toolId]);
 

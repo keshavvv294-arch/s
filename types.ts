@@ -119,6 +119,11 @@ export interface AppSettings {
   hapticsEnabled: boolean;
   privacyMode: boolean;
   pin?: string;
+  fiscalYearStart?: 'jan' | 'apr' | 'jul' | 'oct';
+  autoCategorize?: boolean;
+  dataExportFormat?: 'csv' | 'json';
+  enableNotifications?: boolean;
+  baseCurrency?: string;
 }
 
 // --- Dashboard Customization Types ---

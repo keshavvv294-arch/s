@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, EyeOff, Download, Upload, Trash2, Palette, Globe, RefreshCcw, Bell, Volume2, Smartphone } from 'lucide-react';
+import { X, EyeOff, Download, Upload, Trash2, Palette, Globe, RefreshCcw, Bell, Volume2, Smartphone, Calendar, BrainCircuit } from 'lucide-react';
 import { AppSettings, CURRENCIES } from '../types';
 
 interface SettingsDrawerProps {
@@ -149,7 +149,20 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                       <span className="text-white font-medium">Allow Notifications</span>
                    </div>
                 </button>
-             </section>
+
+                 <div className="flex justify-between items-center p-4 bg-[#1e293b] rounded-xl">
+                    <div className="flex items-center gap-3">
+                       <BrainCircuit className="w-5 h-5 text-purple-400" />
+                       <span className="text-white font-medium">Auto-Categorize AI</span>
+                    </div>
+                    <button 
+                       onClick={() => onUpdateSettings({ autoCategorize: !settings.autoCategorize })} 
+                       className={`w-10 h-5 rounded-full transition-colors relative ${settings.autoCategorize !== false ? 'bg-indigo-600' : 'bg-white/10'}`}
+                    >
+                       <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${settings.autoCategorize !== false ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                 </div>
+              </section>
 
              {/* Regional */}
              <section>
@@ -169,11 +182,44 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                      ))}
                    </select>
                 </div>
+                
+                <div className="flex justify-between items-center p-4 bg-[#1e293b] rounded-xl mt-3">
+                   <div className="flex items-center gap-3">
+                      <Calendar className="w-5 h-5 text-orange-400" />
+                      <span className="text-white font-medium">Fiscal Year Start</span>
+                   </div>
+                   <select 
+                     value={settings.fiscalYearStart || 'jan'}
+                     onChange={(e) => onUpdateSettings({ fiscalYearStart: e.target.value as any })}
+                     className="bg-black/20 text-white text-sm rounded-lg p-2 border border-white/10 outline-none"
+                   >
+                     <option value="jan">January</option>
+                     <option value="apr">April</option>
+                     <option value="jul">July</option>
+                     <option value="oct">October</option>
+                   </select>
+                </div>
              </section>
 
              {/* Data Section */}
              <section>
                 <h3 className="text-xs font-bold text-white/40 uppercase mb-4 tracking-wider">Data Management</h3>
+                
+                <div className="flex justify-between items-center p-4 bg-[#1e293b] rounded-xl mb-4">
+                   <div className="flex items-center gap-3">
+                      <Download className="w-5 h-5 text-indigo-400" />
+                      <span className="text-white font-medium">Export Format</span>
+                   </div>
+                   <select 
+                     value={settings.dataExportFormat || 'json'}
+                     onChange={(e) => onUpdateSettings({ dataExportFormat: e.target.value as any })}
+                     className="bg-black/20 text-white text-sm rounded-lg p-2 border border-white/10 outline-none"
+                   >
+                     <option value="json">JSON</option>
+                     <option value="csv">CSV</option>
+                   </select>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3 mb-4">
                    <button onClick={onExport} className="p-4 bg-[#1e293b] hover:bg-[#334155] rounded-xl flex flex-col items-center gap-2 transition-colors">
                       <Download className="w-6 h-6 text-indigo-400" />

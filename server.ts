@@ -1,5 +1,5 @@
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
@@ -49,7 +49,7 @@ async function startServer() {
   app.use(express.json());
 
   // --- Auth Routes ---
-  app.post('/api/auth/signup', (req, res) => {
+  app.post('/api/auth/signup', (req: Request, res: Response) => {
     const { name, email, password } = req.body;
     const db = getDb();
     
@@ -76,7 +76,7 @@ async function startServer() {
     res.json({ user: userProfile, token: 'mock-jwt-token' });
   });
 
-  app.post('/api/auth/login', (req, res) => {
+  app.post('/api/auth/login', (req: Request, res: Response) => {
     const { email, password } = req.body;
     const db = getDb();
     
@@ -109,7 +109,7 @@ async function startServer() {
     res.json({ user: userProfile, token: 'mock-jwt-token' });
   });
 
-  app.post('/api/auth/update-profile', (req, res) => {
+  app.post('/api/auth/update-profile', (req: Request, res: Response) => {
     const { userId, updates } = req.body;
     const db = getDb();
     const userIndex = db.users.findIndex((u: { id: string }) => u.id === userId);
@@ -124,12 +124,12 @@ async function startServer() {
   });
 
   // --- Global Data Routes ---
-  app.get('/api/data', (req, res) => {
+  app.get('/api/data', (req: Request, res: Response) => {
     const db = getDb();
     res.json(db.globalData);
   });
 
-  app.post('/api/data', (req, res) => {
+  app.post('/api/data', (req: Request, res: Response) => {
     const { transactions, accounts, assets, debts, budgets, settings } = req.body;
     const db = getDb();
     
@@ -153,7 +153,7 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     app.use(express.static(path.join(__dirname, 'dist')));
-    app.get('*', (req, res) => {
+    app.get('*', (req: Request, res: Response) => {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     });
   }

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Plus, Home, LayoutGrid, TrendingUp, Command, Mic2, Briefcase, Edit2, List, Bot, QrCode } from 'lucide-react';
+import { Plus, Home, LayoutGrid, TrendingUp, Command, Mic2, Briefcase, Edit2, List, Bot, PieChart } from 'lucide-react';
 import { TransactionsTab } from './components/TransactionsTab';
 import { TransactionForm } from './components/TransactionForm';
 import { AccountForm } from './components/AccountForm';
@@ -11,7 +11,7 @@ import { CustomizableDashboard } from './components/DashboardWidgets';
 import { InvestmentTab } from './components/InvestmentTab';
 import { CommandPalette } from './components/CommandPalette';
 import { SettingsDrawer } from './components/SettingsDrawer';
-import { BudgetModal } from './components/BudgetModal';
+import { BudgetTab } from './components/BudgetTab';
 import { Achievements } from './components/Achievements';
 import { LoginScreen } from './components/LoginScreen';
 import { OnboardingWizard } from './components/OnboardingWizard';
@@ -45,7 +45,6 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isAccountFormOpen, setIsAccountFormOpen] = useState(false);
   const [isFabOpen, setIsFabOpen] = useState(false);
-  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isGlobalListening, setIsGlobalListening] = useState(false);
   const [activeTool, setActiveTool] = useState<ToolType>('none');
@@ -250,13 +249,14 @@ function App() {
         {activeTab === 'home' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* DUPLICATE REMOVED: SummaryCards is now handled exclusively by CustomizableDashboard's 'summary' widget to prevent double instances. */}
-            <CustomizableDashboard transactions={transactions} assets={assets} summary={summary} budgets={budgets} debts={debts} salary={salary} privacyMode={settings.privacyMode} dailyQuote={dailyQuote} onUpdateSalary={handleSalaryUpdate} actions={{ onOpenForm: () => setIsFormOpen(true), onOpenBudget: () => setIsBudgetModalOpen(true), onOpenInvest: () => setActiveTab('invest'), onOpenChat: () => setActiveTab('chat'), onDeleteTransaction: (id) => setTransactions(t => t.filter(x => x.id !== id)) }} />
+            <CustomizableDashboard transactions={transactions} assets={assets} summary={summary} budgets={budgets} debts={debts} salary={salary} privacyMode={settings.privacyMode} dailyQuote={dailyQuote} onUpdateSalary={handleSalaryUpdate} actions={{ onOpenForm: () => setIsFormOpen(true), onOpenBudget: () => setActiveTab('budget'), onOpenInvest: () => setActiveTab('invest'), onOpenChat: () => setActiveTab('chat'), onDeleteTransaction: (id) => setTransactions(t => t.filter(x => x.id !== id)) }} />
           </div>
         )}
 
         {activeTab === 'transactions' && <TransactionsTab transactions={transactions} onDelete={(id) => setTransactions(t => t.filter(x => x.id !== id))} onDeleteBulk={(ids) => setTransactions(prev => prev.filter(t => !ids.includes(t.id)))} onDuplicate={(t) => handleAddTransaction(t)} onToggleStatus={(id) => setTransactions(prev => prev.map(t => t.id === id ? { ...t, status: t.status === 'cleared' ? 'pending' : 'cleared' } : t))} currencySymbol={currencySymbol} />}
         {activeTab === 'chat' && <AIChat initialMessage={null} />}
-        {activeTab === 'invest' && <InvestmentTab assets={assets} onAddAsset={(a) => setAssets([...assets, a])} onDeleteAsset={(id) => setAssets(prev => prev.filter(a => a.id !== id))} onUpdateAssetValue={(id, val, updated) => setAssets(prev => prev.map(a => a.id === id ? { ...a, value: val, lastUpdated: updated || a.lastUpdated } : a))} privacyMode={settings.privacyMode} />}
+        {activeTab === 'invest' && <InvestmentTab assets={assets} transactions={transactions} onAddTransaction={handleAddTransaction} onAddAsset={(a) => setAssets([...assets, a])} onDeleteAsset={(id) => setAssets(prev => prev.filter(a => a.id !== id))} onUpdateAllAssets={(updater) => setAssets(updater)} privacyMode={settings.privacyMode} />}
+        {activeTab === 'budget' && <BudgetTab budgets={budgets} transactions={transactions} onSave={setBudgets} currencySymbol={currencySymbol} />}
         
         {activeTab === 'tools' && (
           <div className="animate-in fade-in duration-500">
@@ -298,6 +298,7 @@ function App() {
         <NavButton active={activeTab === 'transactions'} onClick={() => setActiveTab('transactions')} icon={List} label="Activity" />
         <NavButton active={activeTab === 'chat'} onClick={() => setActiveTab('chat')} icon={Bot} label="Wealth AI" />
         <NavButton active={activeTab === 'invest'} onClick={() => setActiveTab('invest')} icon={TrendingUp} label="Assets" />
+        <NavButton active={activeTab === 'budget'} onClick={() => setActiveTab('budget')} icon={PieChart} label="Budget" />
         <NavButton active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={LayoutGrid} label="More" />
       </nav>
 
@@ -316,6 +317,7 @@ function App() {
           setAssets(prev => [...prev, {
             id: Date.now().toString(),
             name: cmd.data?.description || cmd.data?.name || 'New Asset',
+            symbol: cmd.data?.symbol || 'N/A',
             amount: cmd.data?.amount || 1,
             value: cmd.data?.value || 0,
             type: cmd.data?.type || 'stock',
@@ -323,7 +325,6 @@ function App() {
           }]);
         }
       }} />}
-      {isBudgetModalOpen && <BudgetModal budgets={budgets} onSave={setBudgets} onClose={() => setIsBudgetModalOpen(false)} currencySymbol={currencySymbol} />}
       <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} settings={settings} onUpdateSettings={(s) => setSettings(p => ({...p, ...s}))} onExport={()=>{}} onImport={()=>{}} onResetData={()=>{}} counts={{ transactions: transactions.length, assets: assets.length }} />
     </div>
   );

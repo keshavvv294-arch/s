@@ -83,13 +83,16 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({ onSelectTool }) => {
     
     // Investment
     { id: 'sip-calc', name: 'SIP Calc', icon: TrendingUp, color: 'text-emerald-400', desc: 'Monthly Inv.', category: 'Investment' },
-    { id: 'lumpsum', name: 'Lumpsum', icon: Coins, color: 'text-teal-400', desc: 'One-time Inv.', category: 'Investment' },
     { id: 'roi-calc', name: 'ROI Calc', icon: BarChart4, color: 'text-indigo-400', desc: 'Returns %', category: 'Investment' },
-    { id: 'fire-calc', name: 'FIRE', icon: Flame, color: 'text-rose-400', desc: 'Freedom No.', category: 'Investment' },
+    { id: 'net-worth-projector', name: 'Net Worth', icon: TrendingUp, color: 'text-cyan-400', desc: 'Future Wealth', category: 'Investment', isNew: true },
     
     // Utilities
     { id: 'split-bill', name: 'Split Bill', icon: Divide, color: 'text-orange-400', desc: 'Group Share', category: 'Utilities' },
     { id: 'quiz', name: 'Quiz', icon: GraduationCap, color: 'text-yellow-400', desc: 'Learn Finance', category: 'Utilities' },
+    { id: 'currency-converter', name: 'Currency', icon: Globe, color: 'text-blue-400', desc: 'FX Rates', category: 'Utilities', isNew: true },
+    { id: 'emergency-fund', name: 'Emergency', icon: ShieldCheck, color: 'text-rose-400', desc: 'Safety Net', category: 'Utilities', isNew: true },
+    { id: 'debt-snowball', name: 'Snowball', icon: Target, color: 'text-red-400', desc: 'Debt Payoff', category: 'Utilities', isNew: true },
+    { id: 'subscription-optimizer', name: 'Sub Opt.', icon: Repeat, color: 'text-pink-400', desc: 'Cut Costs', category: 'Utilities', isNew: true },
   ];
 
   const categories: CategoryDef[] = [
