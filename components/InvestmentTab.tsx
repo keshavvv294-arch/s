@@ -73,6 +73,14 @@ export const InvestmentTab: React.FC<InvestmentTabProps> = ({ assets, transactio
     setIsSyncing(false);
   };
 
+  // Automatic Price Syncing
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleSyncPrices();
+    }, 60000); // Sync every minute
+    return () => clearInterval(interval);
+  }, [handleSyncPrices]);
+
   const handleAnalyzeAsset = (asset: Asset) => {
     setSelectedAsset(asset);
   };

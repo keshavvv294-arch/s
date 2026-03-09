@@ -2,25 +2,23 @@
 import React, { useState } from 'react';
 import { FileText, X, Sparkles, Download } from 'lucide-react';
 import { Transaction } from '../types';
-import { analyzeTaxDeductibles } from '../services/geminiService';
+import { getTaxDeductionStrategy } from '../services/geminiService';
 
 interface SmartTaxAssistantProps {
   onClose: () => void;
-  transactions: Transaction[]; // In a real app, this might fetch from a store
+  transactions: Transaction[];
 }
 
 export const SmartTaxAssistant: React.FC<SmartTaxAssistantProps> = ({ onClose, transactions = [] }) => {
   const [isScanning, setIsScanning] = useState(false);
-  const [report, setReport] = useState<{ totalEstimatedDeduction: number; summary: string; deductibles: { description: string; reason: string; amount: number }[] } | null>(null);
+  const [report, setReport] = useState<{ strategy: string; potentialSavings: number } | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
   const handleScan = async () => {
     setIsScanning(true);
-    // Filter transactions by year (mock)
-    const filtered = transactions; // In real app: transactions.filter(t => t.date.includes(year.toString()));
     
     try {
-       const result = await analyzeTaxDeductibles(filtered);
+       const result = await getTaxDeductionStrategy(transactions);
        setReport(result);
     } catch (e) {
        console.error(e);
@@ -69,25 +67,9 @@ export const SmartTaxAssistant: React.FC<SmartTaxAssistantProps> = ({ onClose, t
        ) : (
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-6">
              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-2xl shadow-lg">
-                <p className="text-blue-100 text-xs font-bold uppercase mb-1">Potential Deductions</p>
-                <h2 className="text-4xl font-bold text-white">${report.totalEstimatedDeduction?.toLocaleString() || 0}</h2>
-                <p className="text-blue-200 text-xs mt-2">{report.summary}</p>
-             </div>
-
-             <div>
-                <h4 className="font-bold text-white mb-3">Identified Items</h4>
-                <div className="space-y-3">
-                   {report.deductibles?.length === 0 && <p className="text-white/30 text-center">No deductions found.</p>}
-                   {report.deductibles?.map((item, i) => (
-                      <div key={i} className="bg-white/5 p-3 rounded-xl flex justify-between items-start border border-white/5">
-                         <div>
-                            <p className="text-white font-medium text-sm">{item.description}</p>
-                            <p className="text-white/40 text-xs mt-1">{item.reason}</p>
-                         </div>
-                         <span className="text-emerald-400 font-bold text-sm">${item.amount}</span>
-                      </div>
-                   ))}
-                </div>
+                <p className="text-blue-100 text-xs font-bold uppercase mb-1">Potential Savings</p>
+                <h2 className="text-4xl font-bold text-white">${report.potentialSavings?.toLocaleString() || 0}</h2>
+                <p className="text-blue-200 text-xs mt-2">{report.strategy}</p>
              </div>
 
              <button className="w-full py-3 border border-white/20 hover:bg-white/5 rounded-xl text-white font-bold flex items-center justify-center gap-2 transition-all">

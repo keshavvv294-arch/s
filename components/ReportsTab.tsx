@@ -117,6 +117,21 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ transactions, assets, su
 
   return (
     <div className="space-y-6 pb-24 animate-in fade-in print:pb-0 print:space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5">
+          <div className="text-white/40 text-xs font-black uppercase tracking-wider mb-1">Total Income</div>
+          <div className="text-2xl font-black">{currencySymbol}{transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}</div>
+        </div>
+        <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5">
+          <div className="text-white/40 text-xs font-black uppercase tracking-wider mb-1">Total Expense</div>
+          <div className="text-2xl font-black text-rose-400">{currencySymbol}{transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}</div>
+        </div>
+        <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5">
+          <div className="text-white/40 text-xs font-black uppercase tracking-wider mb-1">Net Balance</div>
+          <div className={`text-2xl font-black ${(transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0) - transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{currencySymbol}{(transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0) - transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)).toLocaleString()}</div>
+        </div>
+      </div>
+      
       <div className="flex justify-between items-center px-2 print:hidden">
         <div>
           <h2 className="text-2xl font-bold text-white">Monthly Report</h2>

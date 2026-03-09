@@ -1,10 +1,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Loader2, Zap } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Loader2, Zap, Mic, MicOff } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { createChatSession } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { GenerateContentResponse } from "@google/genai";
+import { useSpeechToText } from './useSpeechToText';
 
 interface AIChatProps {
   initialMessage?: string | null;
@@ -24,10 +25,17 @@ export const AIChat: React.FC<AIChatProps> = ({ initialMessage }) => {
   const chatSessionRef = useRef<ReturnType<typeof createChatSession> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText();
 
   useEffect(() => {
     chatSessionRef.current = createChatSession();
   }, []);
+
+  useEffect(() => {
+    if (transcript) {
+        setInput(transcript);
+    }
+  }, [transcript]);
 
   useEffect(() => {
     if (initialMessage && !initializedRef.current) {
@@ -176,15 +184,23 @@ export const AIChat: React.FC<AIChatProps> = ({ initialMessage }) => {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about budget, taxes, or savings..."
-            className="w-full bg-white/5 border border-white/10 rounded-full pl-6 pr-12 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 placeholder:text-white/20 transition-all"
+            className="w-full bg-white/5 border border-white/10 rounded-full pl-6 pr-24 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 placeholder:text-white/20 transition-all"
           />
-          <button
-            onClick={() => handleSend()}
-            disabled={!input.trim() || isLoading}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 rounded-full text-white hover:bg-indigo-500 disabled:opacity-50 disabled:bg-transparent transition-all"
-          >
-            <Send className="w-4 h-4" />
-          </button>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <button
+              onClick={isListening ? stopListening : startListening}
+              className={`p-2 rounded-full transition-all ${isListening ? 'bg-rose-500/20 text-rose-400 animate-pulse' : 'bg-white/5 text-white/40 hover:text-white'}`}
+            >
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isLoading}
+              className="p-2 bg-indigo-600 rounded-full text-white hover:bg-indigo-500 disabled:opacity-50 disabled:bg-transparent transition-all"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

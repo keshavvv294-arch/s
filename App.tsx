@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Plus, Home, LayoutGrid, TrendingUp, Command, Mic2, Briefcase, Edit2, List, Bot, PieChart } from 'lucide-react';
+import { Plus, Home, LayoutGrid, TrendingUp, Command, Mic2, Briefcase, Edit2, List, Bot, PieChart, Settings } from 'lucide-react';
 import { TransactionsTab } from './components/TransactionsTab';
 import { TransactionForm } from './components/TransactionForm';
 import { AccountForm } from './components/AccountForm';
@@ -61,6 +61,7 @@ function App() {
   const [events] = useState<EventBudget[]>([]);
   const [shoppingItems] = useState<ShoppingItem[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [settings, setSettings] = useState<AppSettings>(INITIAL_SETTINGS);
   const [salary, setSalary] = useState<number>(0);
 
@@ -241,6 +242,7 @@ function App() {
         <div className="flex items-center gap-2">
            <button onClick={startGlobalVoice} className={`p-2.5 rounded-full transition-all ${isGlobalListening ? 'bg-red-500 text-white animate-pulse' : 'text-white/40 hover:text-white hover:bg-white/5'}`}><Mic2 className="w-5 h-5" /></button>
            <button onClick={() => setIsCommandOpen(true)} className="p-2.5 text-white/40 hover:text-white transition-colors"><Command className="w-5 h-5" /></button>
+           <button onClick={() => setIsSettingsOpen(true)} className="p-2.5 text-white/40 hover:text-white transition-colors"><Settings className="w-5 h-5" /></button>
            <button onClick={() => setActiveTab('profile')} className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 hover:border-white/30 transition-all"><img src={`https://ui-avatars.com/api/?name=${userProfile.name}&background=6366f1&color=fff`} alt="Profile" className="w-full h-full object-cover" /></button>
         </div>
       </header>
@@ -260,7 +262,17 @@ function App() {
         
         {activeTab === 'tools' && (
           <div className="animate-in fade-in duration-500">
-            {activeTool === 'none' ? <ToolsMenu onSelectTool={setActiveTool} /> : <ToolsViewRenderer activeTool={activeTool} onClose={() => setActiveTool('none')} data={{ transactions, assets, summary, budgets, debts, events: [], shoppingItems: [], creditHistory: [], currencySymbol }} actions={{ onAddDebt: (d) => setDebts([...debts, d]), onDeleteDebt: (id) => setDebts(debts.filter(d => d.id !== id)), onAddScore: () => {}, onDeleteScore: () => {}, onAddEvent: () => {}, onDeleteEvent: () => {}, onAddItem: () => {}, onDeleteItem: () => {}, onToggleItem: () => {}, onConvertToTransaction: () => {}, onAddTransaction: handleAddTransaction }} />}
+            {activeTool === 'none' ? (
+              <ToolsMenu 
+                onSelectTool={setActiveTool} 
+                goals={goals} 
+                onAddGoal={(g) => setGoals([...goals, g])} 
+                onDeleteGoal={(id) => setGoals(goals.filter(g => g.id !== id))} 
+                onUpdateGoal={(g) => setGoals(goals.map(goal => goal.id === g.id ? g : goal))} 
+              />
+            ) : (
+              <ToolsViewRenderer activeTool={activeTool} onClose={() => setActiveTool('none')} data={{ transactions, assets, summary, budgets, debts, events: [], shoppingItems: [], creditHistory: [], currencySymbol }} actions={{ onAddDebt: (d) => setDebts([...debts, d]), onDeleteDebt: (id) => setDebts(debts.filter(d => d.id !== id)), onAddScore: () => {}, onDeleteScore: () => {}, onAddEvent: () => {}, onDeleteEvent: () => {}, onAddItem: () => {}, onDeleteItem: () => {}, onToggleItem: () => {}, onConvertToTransaction: () => {}, onAddTransaction: handleAddTransaction }} />
+            )}
           </div>
         )}
 

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, EyeOff, Download, Upload, Trash2, Palette, Globe, RefreshCcw, Bell, Volume2, Smartphone, Calendar, BrainCircuit } from 'lucide-react';
+import { X, EyeOff, Download, Upload, Trash2, Palette, Globe, RefreshCcw, Bell, Volume2, Smartphone, Calendar, BrainCircuit, Settings } from 'lucide-react';
 import { AppSettings, CURRENCIES } from '../types';
 
 interface SettingsDrawerProps {
@@ -31,12 +31,17 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
     const result = await Notification.requestPermission();
     if (result === 'granted') {
       new Notification('WealthFlow', { body: 'Notifications enabled!' });
+      onUpdateSettings({ enableNotifications: true });
     }
   };
 
   const handleResetPin = () => {
-     if(window.confirm('Reset PIN to default (1234)?')) {
-        onUpdateSettings({ pin: '1234' });
+     const newPin = prompt('Enter new 4-digit PIN:');
+     if (newPin && newPin.length === 4 && /^\d+$/.test(newPin)) {
+        onUpdateSettings({ pin: newPin });
+        alert('PIN updated successfully!');
+     } else if (newPin) {
+        alert('Invalid PIN. Must be 4 digits.');
      }
   };
 
@@ -162,6 +167,28 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                        <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${settings.autoCategorize !== false ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
                  </div>
+              </section>
+
+              {/* Advanced Settings */}
+              <section className="space-y-3">
+                 <h3 className="text-xs font-bold text-white/40 uppercase mb-4 tracking-wider">Advanced</h3>
+                 {[
+                    { key: 'enableBiometricAuth', label: 'Biometric Auth' },
+                    { key: 'enableCloudSync', label: 'Cloud Sync' },
+                    { key: 'enableDarkThemeAuto', label: 'Auto Dark Theme' },
+                    { key: 'enableTransactionAlerts', label: 'Transaction Alerts' },
+                    { key: 'enableBudgetAlerts', label: 'Budget Alerts' },
+                 ].map(s => (
+                    <div key={s.key} className="flex justify-between items-center p-4 bg-[#1e293b] rounded-xl">
+                       <span className="text-white font-medium text-sm">{s.label}</span>
+                       <button 
+                          onClick={() => onUpdateSettings({ [s.key]: !settings[s.key as keyof AppSettings] })} 
+                          className={`w-10 h-5 rounded-full transition-colors relative ${settings[s.key as keyof AppSettings] ? 'bg-indigo-600' : 'bg-white/10'}`}
+                       >
+                          <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${settings[s.key as keyof AppSettings] ? 'translate-x-5' : 'translate-x-0'}`} />
+                       </button>
+                    </div>
+                 ))}
               </section>
 
              {/* Regional */}

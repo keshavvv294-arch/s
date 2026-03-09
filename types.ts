@@ -50,6 +50,7 @@ export interface Asset {
   type: 'stock' | 'crypto' | 'real-estate' | 'gold' | 'cash';
   amount: number;
   value: number;
+  purchasePrice: number;
   currency: string;
   lastUpdated?: string;
   isWatchlist?: boolean;
@@ -82,11 +83,13 @@ export interface EventBudget {
   coverImage?: string;
 }
 
-export interface ShoppingItem {
+export interface Goal {
   id: string;
   name: string;
-  estimatedPrice: number;
-  isBought: boolean;
+  targetAmount: number;
+  currentAmount: number;
+  deadline: string;
+  category: 'savings' | 'investment' | 'debt' | 'purchase' | 'other';
 }
 
 export interface UserProfile {
@@ -124,6 +127,11 @@ export interface AppSettings {
   dataExportFormat?: 'csv' | 'json';
   enableNotifications?: boolean;
   baseCurrency?: string;
+  enableBiometricAuth?: boolean;
+  enableCloudSync?: boolean;
+  enableDarkThemeAuto?: boolean;
+  enableTransactionAlerts?: boolean;
+  enableBudgetAlerts?: boolean;
 }
 
 // --- Dashboard Customization Types ---

@@ -1,5 +1,6 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { Transaction, CATEGORIES, ASSET_TYPES, QuizQuestion, Asset } from "../types";
+import axios from 'axios';
 
 // Get API Key from the injected environment variable
 const getApiKey = () => {
@@ -16,8 +17,37 @@ if (!apiKey) {
   console.warn("WealthFlow AI: API_KEY is missing. AI features will be unavailable. Please set API_KEY in your deployment environment variables.");
 }
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const withRetry = async <T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+  try {
+    return await fn();
+  } catch (error) {
+    if (isQuotaError(error) && retries > 0) {
+      console.warn(`Quota exceeded. Retrying in ${delay}ms... (${retries} retries left)`);
+      await sleep(delay);
+      return withRetry(fn, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+};
+
 export const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
 export const geminiClient = ai;
+
+// Financial Data API
+export const fetchRealTimePrice = async (symbol: string): Promise<number> => {
+  try {
+    // Using Yahoo Finance public API as a reliable source
+    const response = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`);
+    const price = response.data.chart.result[0].meta.regularMarketPrice;
+    return price || 0;
+  } catch (error) {
+    console.error(`Failed to fetch price for ${symbol}:`, error);
+    return 0;
+  }
+};
+
 
 const SYSTEM_INSTRUCTION = `
 You are WealthFlow AI, a smart, empathetic, and professional financial assistant.
@@ -29,7 +59,7 @@ If asked about the user's data, remind them you only see what they provide in th
 
 export const createChatSession = () => {
   return ai.chats.create({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-3.1-pro-preview',
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
     }
@@ -49,7 +79,7 @@ export const parseReceiptImage = async (base64Image: string): Promise<Partial<Tr
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: {
         parts: [
           { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
@@ -121,14 +151,14 @@ export const lookupAssetSymbol = async (query: string): Promise<{ symbol: string
       Return ONLY valid JSON.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
         tools: [{ googleSearch: {} }]
       }
-    });
+    }));
     
     const result = JSON.parse(response.text || '{}');
     if (result.symbol) {
@@ -156,7 +186,7 @@ export const predictCategory = async (description: string): Promise<string> => {
   try {
     const prompt = `Categorize this transaction description: "${description}". Choose exactly one from: ${CATEGORIES.join(', ')}. Return only the category name.`;
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: prompt
     });
     return response.text?.trim() || 'Other';
@@ -173,7 +203,7 @@ export const batchCategorizeTransactions = async (descriptions: string[]): Promi
       Return a JSON object where the key is the description and the value is the category.
     `;
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: { responseMimeType: "application/json" }
     });
@@ -191,10 +221,10 @@ export const getFinancialAdvice = async (transactions: Transaction[], salary: nu
       Provide 3 brief, bulleted tips to save money or improve financial health. 
       Focus on the biggest spending categories.
     `;
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt
-    });
+    }));
     return response.text || "Keep tracking your expenses to see insights!";
   } catch (e) {
     console.warn("getFinancialAdvice failed", e);
@@ -215,14 +245,15 @@ export const processNaturalLanguageCommand = async (input: string): Promise<{act
       For transactions, infer category from ${CATEGORIES.join(', ')}.
       For assets, infer type from ${Object.keys(ASSET_TYPES).join(', ')}.
     `;
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: { 
         responseMimeType: "application/json",
-        tools: [{ googleSearch: {} }]
+        tools: [{ googleSearch: {} }],
+        thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
       }
-    });
+    }));
     return JSON.parse(response.text || '{}');
   } catch (e) {
     console.warn("processNaturalLanguageCommand failed", e);
@@ -235,6 +266,16 @@ export const getLatestAssetPrice = async (assetName: string, symbol?: string): P
   const cached = getCachedData(cacheKey, CACHE_TTL.PRICE);
   if (cached !== null) return cached;
 
+  // Try fetching from real-time API first
+  if (symbol && symbol !== 'N/A') {
+    const price = await fetchRealTimePrice(symbol.split(':')[1] || symbol);
+    if (price > 0) {
+      setCachedData(cacheKey, price);
+      return price;
+    }
+  }
+
+  // Fallback to Gemini if API fails
   try {
     const query = symbol && symbol !== 'N/A' ? `${symbol} (${assetName})` : assetName;
     const prompt = `
@@ -245,14 +286,14 @@ export const getLatestAssetPrice = async (assetName: string, symbol?: string): P
       Example output: 67980.50
     `;
     
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
         thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
       }
-    });
+    }));
     
     const text = response.text?.trim() || '';
     // Clean the output to ensure only numbers and dots remain
@@ -314,13 +355,14 @@ export const getMarketAnalysis = async (symbol: string, name: string): Promise<s
       Use Google Search to find the latest trends, news, and sentiment (bullish/bearish).
       The current time is ${new Date().toISOString()}.
     `;
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: {
-        tools: [{ googleSearch: {} }]
+        tools: [{ googleSearch: {} }],
+        thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
       }
-    });
+    }));
     return response.text || "Analysis unavailable.";
   } catch {
     return "Analysis unavailable.";
@@ -401,48 +443,91 @@ export const getRealForexRate = async (from: string, to: string): Promise<number
   }
 };
 
-export const analyzeTaxDeductibles = async (transactions: Transaction[]): Promise<any> => {
+export const analyzeCashFlow = async (transactions: Transaction[]): Promise<{ summary: string, recommendations: string[] }> => {
   try {
     const prompt = `
-      Analyze these transactions for potential tax deductions (Standard USA rules).
-      Transactions: ${JSON.stringify(transactions.map(t => ({ desc: t.description, cat: t.category, amt: t.amount, type: t.type })))}
-      
-      Return JSON with:
-      - "deductibles": array of { description, amount, reason }
-      - "totalEstimatedDeduction": number
-      - "summary": string (brief advice)
+      Analyze these transactions: ${JSON.stringify(transactions.slice(0, 50))}.
+      Provide a concise summary of the user's cash flow and 3 actionable recommendations to improve it.
+      Return JSON: { "summary": string, "recommendations": string[] }
     `;
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt,
       config: { responseMimeType: "application/json" }
     });
-    return JSON.parse(response.text || '{}');
+    return JSON.parse(response.text || '{"summary": "No data", "recommendations": []}');
   } catch {
-    return { deductibles: [], totalEstimatedDeduction: 0, summary: "Could not analyze tax data." };
+    return { summary: "Could not analyze cash flow.", recommendations: [] };
   }
 };
 
-export const simulateInvestmentPortfolio = async (assets: Asset[], monthlyContribution: number, scenario: 'bull' | 'bear' | 'crash'): Promise<any[]> => {
+export const getTaxDeductionStrategy = async (transactions: Transaction[]): Promise<{ strategy: string, potentialSavings: number }> => {
   try {
     const prompt = `
-      Simulate a 5-year investment projection for this portfolio: ${JSON.stringify(assets)}.
-      Monthly Contribution: $${monthlyContribution}.
-      Scenario: ${scenario} market.
-      
-      Return JSON array of objects, one for each year (Year 0 to Year 5), with fields:
-      - "year": number
-      - "value": number (projected total value)
-      - "label": string (e.g. "2024")
+      Analyze these transactions for potential tax deductions: ${JSON.stringify(transactions.slice(0, 50))}.
+      Provide a brief strategy and estimated potential savings.
+      Return JSON: { "strategy": string, "potentialSavings": number }
     `;
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt,
       config: { responseMimeType: "application/json" }
     });
-    return JSON.parse(response.text || '[]');
+    return JSON.parse(response.text || '{"strategy": "No data", "potentialSavings": 0}');
   } catch {
-    return [];
+    return { strategy: "Could not analyze tax strategy.", potentialSavings: 0 };
+  }
+};
+
+export const getInvestmentProjection = async (assets: Asset[], monthlyContribution: number, years: number): Promise<{ projection: number, advice: string }> => {
+  try {
+    const prompt = `
+      Simulate a ${years}-year investment projection for this portfolio: ${JSON.stringify(assets)}.
+      Monthly Contribution: $${monthlyContribution}.
+      Return JSON: { "projection": number, "advice": string }
+    `;
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: prompt,
+      config: { responseMimeType: "application/json" }
+    });
+    return JSON.parse(response.text || '{"projection": 0, "advice": "No data"}');
+  } catch {
+    return { projection: 0, advice: "Could not project investment." };
+  }
+};
+
+export const getCreditScoreImprovementPlan = async (score: number, debts: Debt[]): Promise<{ plan: string[], timeline: string }> => {
+  try {
+    const prompt = `
+      Create a credit score improvement plan for a score of ${score} with ${debts.length} debts.
+      Return JSON: { "plan": string[], "timeline": string }
+    `;
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: prompt,
+      config: { responseMimeType: "application/json" }
+    });
+    return JSON.parse(response.text || '{"plan": [], "timeline": "Unknown"}');
+  } catch {
+    return { plan: ["Pay bills on time", "Reduce debt"], timeline: "Unknown" };
+  }
+};
+
+export const getCurrencyHedgingStrategy = async (amount: number, from: string, to: string): Promise<{ strategy: string, riskLevel: string }> => {
+  try {
+    const prompt = `
+      Provide a currency hedging strategy for transferring ${amount} ${from} to ${to}.
+      Return JSON: { "strategy": string, "riskLevel": "Low" | "Medium" | "High" }
+    `;
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: prompt,
+      config: { responseMimeType: "application/json" }
+    });
+    return JSON.parse(response.text || '{"strategy": "No data", "riskLevel": "Medium"}');
+  } catch {
+    return { strategy: "Could not analyze hedging strategy.", riskLevel: "Medium" };
   }
 };
 

@@ -10,10 +10,15 @@ import {
   Users, Hand, BrainCircuit, Tag, LayoutGrid, Sparkles,
   WalletCards, MapPin, GraduationCap
 } from 'lucide-react';
-import { ToolType } from '../types';
+import { ToolType, Goal } from '../types';
+import { GoalsCard } from './GoalsCard';
 
 interface ToolsMenuProps {
   onSelectTool: (tool: ToolType) => void;
+  goals: Goal[];
+  onAddGoal: (goal: Goal) => void;
+  onDeleteGoal: (id: string) => void;
+  onUpdateGoal: (goal: Goal) => void;
 }
 
 interface ToolDef {
@@ -35,7 +40,7 @@ interface CategoryDef {
   desc: string;
 }
 
-export const ToolsMenu: React.FC<ToolsMenuProps> = ({ onSelectTool }) => {
+export const ToolsMenu: React.FC<ToolsMenuProps> = ({ onSelectTool, goals, onAddGoal, onDeleteGoal, onUpdateGoal }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
@@ -80,11 +85,17 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({ onSelectTool }) => {
     { id: 'gst-calc', name: 'GST/VAT', icon: DollarSign, color: 'text-purple-400', desc: 'Tax Add/Rem', category: 'Calculators' },
     { id: 'fuel-cost', name: 'Fuel Cost', icon: Car, color: 'text-red-400', desc: 'Trip Estimate', category: 'Calculators' },
     { id: 'unit-price', name: 'Unit Price', icon: Scale, color: 'text-lime-400', desc: 'Best Value', category: 'Calculators' },
+    { id: 'cagr-calc', name: 'CAGR Calc', icon: TrendingUp, color: 'text-indigo-400', desc: 'Annual Growth', category: 'Calculators' },
+    { id: 'rule-72', name: 'Rule of 72', icon: Calculator, color: 'text-amber-400', desc: 'Doubling Time', category: 'Calculators' },
+    { id: 'salary-tax', name: 'Salary Tax', icon: DollarSign, color: 'text-purple-400', desc: 'Net Income', category: 'Calculators' },
     
     // Investment
     { id: 'sip-calc', name: 'SIP Calc', icon: TrendingUp, color: 'text-emerald-400', desc: 'Monthly Inv.', category: 'Investment' },
     { id: 'roi-calc', name: 'ROI Calc', icon: BarChart4, color: 'text-indigo-400', desc: 'Returns %', category: 'Investment' },
     { id: 'net-worth-projector', name: 'Net Worth', icon: TrendingUp, color: 'text-cyan-400', desc: 'Future Wealth', category: 'Investment', isNew: true },
+    { id: 'step-up-sip', name: 'Step-Up SIP', icon: TrendingUp, color: 'text-emerald-400', desc: 'Increase Inv.', category: 'Investment' },
+    { id: 'zakat-calc', name: 'Zakat Calc', icon: Coins, color: 'text-yellow-400', desc: 'Charity Calc', category: 'Investment' },
+    { id: 'cc-payoff', name: 'CC Payoff', icon: CreditCard, color: 'text-rose-400', desc: 'Debt Strategy', category: 'Investment' },
     
     // Utilities
     { id: 'split-bill', name: 'Split Bill', icon: Divide, color: 'text-orange-400', desc: 'Group Share', category: 'Utilities' },
@@ -93,6 +104,13 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({ onSelectTool }) => {
     { id: 'emergency-fund', name: 'Emergency', icon: ShieldCheck, color: 'text-rose-400', desc: 'Safety Net', category: 'Utilities', isNew: true },
     { id: 'debt-snowball', name: 'Snowball', icon: Target, color: 'text-red-400', desc: 'Debt Payoff', category: 'Utilities', isNew: true },
     { id: 'subscription-optimizer', name: 'Sub Opt.', icon: Repeat, color: 'text-pink-400', desc: 'Cut Costs', category: 'Utilities', isNew: true },
+    
+    // Goals
+    { id: 'goal-create', name: 'Create Goal', icon: Target, color: 'text-emerald-400', desc: 'Define New Goal', category: 'Goals' },
+    { id: 'goal-track', name: 'Track Progress', icon: Activity, color: 'text-emerald-400', desc: 'Add Contributions', category: 'Goals' },
+    { id: 'goal-visual', name: 'Visual Chart', icon: BarChart4, color: 'text-emerald-400', desc: 'View Progress', category: 'Goals' },
+    { id: 'goal-deadline', name: 'Deadline', icon: Timer, color: 'text-emerald-400', desc: 'Countdown', category: 'Goals' },
+    { id: 'goal-type', name: 'Goal Type', icon: Tag, color: 'text-emerald-400', desc: 'Categorize', category: 'Goals' },
   ];
 
   const categories: CategoryDef[] = [
@@ -101,6 +119,7 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({ onSelectTool }) => {
     // WalletCards is now imported
     { id: 'Essentials', name: 'Essentials', icon: WalletCards, color: 'text-blue-400', bgGradient: 'from-blue-600/20 to-cyan-600/20', desc: 'Core tracking & reporting tools' },
     { id: 'Planning', name: 'Planning', icon: Calendar, color: 'text-sky-400', bgGradient: 'from-sky-600/20 to-blue-600/20', desc: 'Goal setting & budget planning' },
+    { id: 'Goals', name: 'Goals', icon: Target, color: 'text-emerald-400', bgGradient: 'from-emerald-600/20 to-teal-600/20', desc: 'Track your financial aspirations' },
     { id: 'Investment', name: 'Wealth', icon: Coins, color: 'text-emerald-400', bgGradient: 'from-emerald-600/20 to-teal-600/20', desc: 'Portfolio & ROI calculators' },
     { id: 'Calculators', name: 'Calculators', icon: Calculator, color: 'text-amber-400', bgGradient: 'from-amber-600/20 to-orange-600/20', desc: 'EMI, Taxes, and Interests' },
     { id: 'Utilities', name: 'Utilities', icon: LayoutGrid, color: 'text-rose-400', bgGradient: 'from-rose-600/20 to-red-600/20', desc: 'Group splitting & educational quizzes' },
